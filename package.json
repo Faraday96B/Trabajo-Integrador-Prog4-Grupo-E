@@ -1,0 +1,11 @@
+{
+  "name": "trabajo-final-integrador",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TODO: Proyecto para el sistema de inscripcion a cursos.",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node src/app.js"
+  }
+}
