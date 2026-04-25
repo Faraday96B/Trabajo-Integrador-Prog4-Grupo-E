@@ -4,8 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cursos</title>
+  <link rel="stylesheet" href="../css/estilos.css">
 </head>
 <body>
-  <!-- TODO: ABM de cursos y generacion de diplomas. -->
+  <div class="cursos-container">
+    <div class="header">
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar cursos por nombre...">
+      <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
+    </div>
+    <div id="cursosGrid" class="cursos-grid">
+      <!-- Los cursos se renderizarán aquí -->
+    </div>
+  </div>
+  <script src="../js/api.js"></script>
+  <script src="../js/cursos.js"></script>
 </body>
 </html>

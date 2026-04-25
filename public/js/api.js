@@ -1,1 +1,1 @@
-// TODO: Funciones comunes para consumir la API.
+// Placeholder para futuras funciones de API. Por ahora vacío.
