@@ -112,8 +112,15 @@ function createActionsCell(courseId) {
   deleteButton.dataset.id = courseId;
   deleteButton.textContent = "Eliminar";
 
-  actions.append(editButton, deleteButton);
+  const diplomaButton = document.createElement("button");
+  diplomaButton.className = "action-button diploma";
+  diplomaButton.type = "button";
+  diplomaButton.dataset.id = courseId;
+  diplomaButton.textContent = "Diploma";
+
+  actions.append(editButton, deleteButton, diplomaButton);
   cell.appendChild(actions);
+
   return cell;
 }
 

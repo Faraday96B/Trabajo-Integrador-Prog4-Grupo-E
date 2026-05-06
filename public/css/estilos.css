@@ -199,7 +199,7 @@ body {
 .courses-table {
   border-collapse: collapse;
   min-width: 920px;
-  table-layout: fixed;
+  table-layout: auto;
   width: 100%;
 }
 
@@ -265,7 +265,7 @@ body {
 }
 
 .table-actions {
-  display: flex;
+  display: inline-flex;
   gap: 6px;
   justify-content: center;
 }
@@ -276,7 +276,7 @@ body {
   color: #151515;
   cursor: pointer;
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   min-height: 36px;
   padding: 8px 12px;
 }
@@ -340,4 +340,87 @@ body {
   .course-card {
     min-height: auto;
   }
+}
+
+
+.formulario{
+  background-color: rgb(205, 203, 203);
+
+  gap: 8px;
+  padding: 10px;
+  margin: 20px 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+  max-width: 650px;
+  width: 100%;
+  margin: 20px 0;
+
+}
+
+.campo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.campo label {
+  width: 130px;
+  font-size: 16px;
+}
+
+.campo input,
+.campo select {
+  width: 65%;
+  padding: 7px;   
+  font-size: 13px;
+
+}
+
+.formulario button{
+  width: 150px;
+  margin: 20px;
+  padding: 7px;
+
+  border: none;
+  background-color: #363996;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+
+
+}
+.formulario button:hover{
+  background-color: #3d3993
+}
+
+.action-button.diploma {
+  background: linear-gradient(135deg, #f4c542, #e0a800);
+  color: #3a2e00;
+  border: 1px solid #c99800;
+}
+
+.action-button.diploma:hover {
+  background: linear-gradient(135deg, #ffd95e, #c99800);
+  transform: scale(1.05);
+}
+
+
+
+.input-error {
+  border: 2px solid #e63946;
+  background-color: #ffe5e5;
+}
+
+
+.input-ok {
+  border: 2px solid #2a9d8f;
+  background-color: #e6fff5;
+}
+
+.error-text {
+  color: #e63946;
+  font-size: 12px;
+  margin-left: 130px; 
 }
