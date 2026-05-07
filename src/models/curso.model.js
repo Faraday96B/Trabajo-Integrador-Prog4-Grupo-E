@@ -3,7 +3,7 @@ const pool = require('../db/pool');
 const TABLE = 'public.cursos';
 
 function buildFilters({ nombre, estado, fechaDesde, fechaHasta } = {}) {
-  const where = [];
+  const where = ['ce.es_activo = 1'];
   const params = [];
 
   if (nombre) {

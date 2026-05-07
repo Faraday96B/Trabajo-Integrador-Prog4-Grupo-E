@@ -1,47 +1,14 @@
 const coursesTableBody = document.querySelector("#coursesTableBody");
-
-const fallbackCourses = [
-  {
-    idCurso: 1,
-    nombre: "Programacion Web con React",
-    fechaInicio: "2026-04-20T03:00:00.000Z",
-    cantidadHoras: 60,
-    inscriptosMax: 30,
-    estado: "BORRADOR"
-  },
-  {
-    idCurso: 2,
-    nombre: "Introduccion a la Inteligencia Artificial",
-    fechaInicio: "2026-05-05T03:00:00.000Z",
-    cantidadHoras: 50,
-    inscriptosMax: 25,
-    estado: "BORRADOR"
-  },
-  {
-    idCurso: 3,
-    nombre: "Seguridad Informatica y Ethical Hacking",
-    fechaInicio: "2026-05-10T03:00:00.000Z",
-    cantidadHoras: 70,
-    inscriptosMax: 20,
-    estado: "BORRADOR"
-  },
-  {
-    idCurso: 4,
-    nombre: "Bases de Datos SQL y NoSQL",
-    fechaInicio: "2026-04-25T03:00:00.000Z",
-    cantidadHoras: 55,
-    inscriptosMax: 35,
-    estado: "BORRADOR"
-  },
-  {
-    idCurso: 5,
-    nombre: "Desarrollo Backend con Node.js y NestJS",
-    fechaInicio: "2026-05-15T03:00:00.000Z",
-    cantidadHoras: 65,
-    inscriptosMax: 30,
-    estado: "BORRADOR"
-  }
-];
+const courseForm = document.querySelector(".formulario form");
+const courseIdInput = document.querySelector("#cursoId");
+const nombreInput = document.querySelector("#nombre");
+const inicioInput = document.querySelector("#inicio");
+const horasInput = document.querySelector("#horas");
+const maxInscriptosInput = document.querySelector("#maxinscripto");
+const estadoInput = document.querySelector("#estado");
+const formTitle = document.querySelector(".formulario h3");
+const submitButton = courseForm?.querySelector('button[type="submit"]');
+const cancelEditButton = document.querySelector("#cancelarEdicion");
 
 function fixText(value) {
   if (typeof value !== "string") {
@@ -72,11 +39,13 @@ function formatDate(value) {
 function normalizeCourse(course) {
   return {
     id: course.idCurso ?? course.id_curso ?? "-",
+    idCurso: course.idCurso ?? course.id_curso,
     nombre: course.nombre ?? "-",
     fechaInicio: course.fechaInicio ?? course.fecha_inicio,
     cantidadHoras: course.cantidadHoras ?? course.cantidad_horas ?? "-",
     inscriptosMax: course.inscriptosMax ?? course.inscriptos_max ?? "-",
-    estado: course.estado ?? course.curso_estado_descripcion ?? "-"
+    estado: course.estado ?? course.curso_estado_descripcion ?? "-",
+    idCursoEstado: course.idCursoEstado ?? course.id_curso_estado ?? ""
   };
 }
 
@@ -95,16 +64,19 @@ function createStatusCell(statusText) {
   return cell;
 }
 
-function createActionsCell(courseId) {
+function createActionsCell(courseId, courseStatusId) {
   const cell = document.createElement("td");
   const actions = document.createElement("div");
   actions.className = "table-actions";
+  const isDeleted = Number(courseStatusId) === 4;
 
   const editButton = document.createElement("button");
   editButton.className = "action-button edit";
   editButton.type = "button";
   editButton.dataset.id = courseId;
   editButton.textContent = "Editar";
+  editButton.disabled = isDeleted;
+  editButton.title = isDeleted ? "No se puede editar un curso eliminado" : "";
 
   const deleteButton = document.createElement("button");
   deleteButton.className = "action-button delete";
@@ -127,6 +99,7 @@ function createActionsCell(courseId) {
 function createCourseRow(course) {
   const normalizedCourse = normalizeCourse(course);
   const row = document.createElement("tr");
+  row.dataset.id = normalizedCourse.idCurso;
 
   row.append(
     createCell(normalizedCourse.id),
@@ -135,51 +108,202 @@ function createCourseRow(course) {
     createCell(normalizedCourse.cantidadHoras),
     createCell(normalizedCourse.inscriptosMax),
     createStatusCell(normalizedCourse.estado),
-    createActionsCell(normalizedCourse.id)
+    createActionsCell(normalizedCourse.idCurso, normalizedCourse.idCursoEstado)
   );
 
   return row;
 }
 
-function getCoursesFromResponse(payload) {
-  if (Array.isArray(payload)) {
-    return payload;
+async function requestApi(url, options = {}) {
+  const response = await fetch(url, options);
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(result?.message || `Error HTTP ${response.status}`);
   }
 
-  if (Array.isArray(payload?.data)) {
-    return payload.data;
+  if (!result?.ok) {
+    throw new Error(result?.message || "La API respondio con error.");
   }
 
-  return [];
+  return result;
 }
 
 function renderCourses(courses) {
   coursesTableBody.replaceChildren(...courses.map(createCourseRow));
 }
 
-async function fetchCoursesFrom(url) {
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`No se pudo cargar ${url}`);
-  }
-
-  return getCoursesFromResponse(await response.json());
-}
-
 async function loadCourses() {
   try {
-    const courses = await fetchCoursesFrom("/cursos");
-    renderCourses(courses);
-  } catch {
-    try {
-      const courses = await fetchCoursesFrom("../js/cursos.json");
-      renderCourses(courses);
-    } catch {
-      renderCourses(fallbackCourses);
-    }
+    const result = await requestApi("/api/cursos");
+    renderCourses(Array.isArray(result.data) ? result.data : []);
+  } catch (error) {
+    console.error(error);
+    alert(`No se pudieron cargar los cursos: ${error.message}`);
+    renderCourses([]);
   }
 }
+
+function getFormData() {
+  return {
+    nombre: nombreInput.value.trim(),
+    descripcion: "",
+    fecha_inicio: inicioInput.value,
+    cantidad_horas: Number(horasInput.value),
+    inscriptos_max: Number(maxInscriptosInput.value),
+    id_curso_estado: Number(estadoInput.value)
+  };
+}
+
+function formatDateForInput(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
+function resetForm() {
+  courseForm.reset();
+  courseIdInput.value = "";
+
+  if (submitButton) {
+    submitButton.textContent = "Agregar";
+  }
+
+  if (formTitle) {
+    formTitle.textContent = "Agregar curso";
+  }
+
+  if (cancelEditButton) {
+    cancelEditButton.hidden = true;
+  }
+}
+
+function fillForm(course) {
+  const normalizedCourse = normalizeCourse(course);
+
+  courseIdInput.value = normalizedCourse.idCurso;
+  nombreInput.value = fixText(normalizedCourse.nombre);
+  inicioInput.value = formatDateForInput(normalizedCourse.fechaInicio);
+  horasInput.value = normalizedCourse.cantidadHoras;
+  maxInscriptosInput.value = normalizedCourse.inscriptosMax;
+  estadoInput.value = String(normalizedCourse.idCursoEstado);
+
+  if (submitButton) {
+    submitButton.textContent = "Actualizar";
+  }
+
+  if (formTitle) {
+    formTitle.textContent = "Actualizar curso";
+  }
+
+  if (cancelEditButton) {
+    cancelEditButton.hidden = false;
+  }
+}
+
+async function saveCourse(event) {
+  event.preventDefault();
+
+  const id = courseIdInput.value;
+  const isEditing = Boolean(id);
+  const url = isEditing ? `/api/cursos/${id}` : "/api/cursos";
+  const method = isEditing ? "PUT" : "POST";
+
+  try {
+    const result = await requestApi(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(getFormData())
+    });
+
+    alert(result.message);
+    resetForm();
+    await loadCourses();
+  } catch (error) {
+    console.error(error);
+    alert(`No se pudo guardar el curso: ${error.message}`);
+  }
+}
+
+async function editCourse(id) {
+  try {
+    const result = await requestApi(`/api/cursos/${id}`);
+
+    if (Number(result.data?.id_curso_estado) === 4) {
+      alert("No se puede editar un curso eliminado");
+      resetForm();
+      return;
+    }
+
+    fillForm(result.data);
+  } catch (error) {
+    console.error(error);
+    alert(`No se pudo cargar el curso: ${error.message}`);
+  }
+}
+
+async function deleteCourse(id) {
+  const confirmed = confirm("¿Seguro que querés eliminar este curso?");
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const result = await requestApi(`/api/cursos/${id}`, {
+      method: "DELETE"
+    });
+
+    alert(result.message);
+    await loadCourses();
+  } catch (error) {
+    console.error(error);
+    alert(`No se pudo eliminar el curso: ${error.message}`);
+  }
+}
+
+async function generateDiploma(id) {
+  try {
+    const result = await requestApi(`/api/cursos/${id}/diploma`);
+    alert(result.message);
+    console.log(result.data);
+  } catch (error) {
+    console.error(error);
+    alert(`No se pudo generar el diploma: ${error.message}`);
+  }
+}
+
+function handleTableClick(event) {
+  const button = event.target.closest("button");
+
+  if (!button) {
+    return;
+  }
+
+  const id = button.dataset.id;
+
+  if (!id) {
+    return;
+  }
+
+  if (button.classList.contains("edit")) {
+    editCourse(id);
+  } else if (button.classList.contains("delete")) {
+    deleteCourse(id);
+  } else if (button.classList.contains("diploma")) {
+    generateDiploma(id);
+  }
+}
+
+courseForm?.addEventListener("submit", saveCourse);
+cancelEditButton?.addEventListener("click", resetForm);
+coursesTableBody?.addEventListener("click", handleTableClick);
 
 if (coursesTableBody) {
   loadCourses();

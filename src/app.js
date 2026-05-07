@@ -1,17 +1,29 @@
 const express = require('express');
+const path = require('path');
 const cursosRoutes = require('./routes/cursos.routes');
 
 const app = express();
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/health', (req, res) => {
   res.json({ ok: true, message: 'Servidor funcionando' });
 });
 
-app.use('/cursos', cursosRoutes);
+app.get('/', (req, res) => {
+  res.redirect('/pages/dashboard.html');
+});
+
+app.get('/cursos', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/pages/cursos.html'));
+});
+
+app.use('/api/cursos', cursosRoutes);
 
 app.use((error, req, res, next) => {
+  console.error('ERROR REAL:', error);
+
   const status = error.status || 500;
   res.status(status).json({
     ok: false,
