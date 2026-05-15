@@ -9,27 +9,33 @@ const courseForm = document.querySelector(".course-form");
 const courseNameInput = document.querySelector("#courseName");
 const courseDescriptionInput = document.querySelector("#courseDescription");
 const courseStartDateInput = document.querySelector("#courseStartDate");
-const courseEndDateInput = document.querySelector("#courseEndDate");
-const courseEnrollmentEnabledInput = document.querySelector("#courseEnrollmentEnabled");
+const courseHoursInput = document.querySelector("#courseHours");
 const courseCapacityInput = document.querySelector("#courseCapacity");
 const courseStatusInput = document.querySelector("#courseStatus");
 const courseFormHeading = document.querySelector(".course-form-heading h1");
 const courseFormIntro = document.querySelector(".course-form-heading p");
 
-const coursesStorageKey = "fcadCursos";
-
 let allCourses = [];
 let editingCourseId = null;
 
-function fixText(value) {
-  if (typeof value !== "string") {
-    return value;
+async function requestApi(url, options = {}) {
+  const response = await fetch(url, options);
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(result?.message || `Error HTTP ${response.status}`);
   }
 
-  try {
-    return decodeURIComponent(escape(value));
-  } catch {
-    return value;
+  if (!result?.ok) {
+    throw new Error(result?.message || "La API respondio con error.");
+  }
+
+  return result;
+}
+
+function setLoading(message = "Cargando cursos...") {
+  if (resultsText) {
+    resultsText.textContent = message;
   }
 }
 
@@ -53,6 +59,10 @@ function formatDate(value) {
 }
 
 function formatDateForInput(value) {
+  if (!value) {
+    return "";
+  }
+
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
@@ -62,46 +72,20 @@ function formatDateForInput(value) {
   return date.toISOString().slice(0, 10);
 }
 
-function addDays(value, days) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function getStatusKey(statusText) {
-  const normalizedStatus = statusText.toLowerCase();
-
-  if (normalizedStatus.includes("inactivo")) {
-    return "inactivo";
-  }
-
-  if (normalizedStatus.includes("borrador")) {
-    return "borrador";
-  }
-
-  return "activo";
-}
-
-function normalizeCourse(course, index) {
-  const startDate = course.fechaInicio ?? course.fecha_inicio;
-  const statusText = fixText(course.estado ?? course.curso_estado_descripcion ?? "BORRADOR");
-
+function normalizeCourse(course) {
   return {
-    id: course.idCurso ?? course.id_curso ?? index + 1,
-    idCurso: course.idCurso ?? course.id_curso ?? index + 1,
-    nombre: fixText(course.nombre ?? "-"),
-    descripcion: fixText(course.descripcion ?? ""),
-    fechaInicio: startDate,
-    fechaFin: course.fechaFin ?? course.fecha_fin ?? addDays(startDate, 90),
-    cupoMax: course.inscriptosMax ?? course.inscriptos_max ?? 0,
-    inscriptos: course.inscriptosConfirmados ?? course.inscriptos_confirmados ?? 0,
-    estado: statusText,
-    estadoKey: getStatusKey(statusText)
+    id: course.id,
+    nombre: course.nombre ?? "-",
+    descripcion: course.descripcion ?? "",
+    fechaInicio: course.fechaInicio,
+    cantidadHoras: course.cantidadHoras ?? 0,
+    inscriptosMax: course.inscriptosMax ?? 0,
+    inscriptosConfirmados: course.inscriptosConfirmados ?? 0,
+    estado: {
+      id: course.estado?.id,
+      descripcion: course.estado?.descripcion ?? "-",
+      activo: course.estado?.activo ?? false
+    }
   };
 }
 
@@ -114,14 +98,15 @@ function createCell(text) {
 function createStatusCell(course) {
   const cell = document.createElement("td");
   const badge = document.createElement("span");
-  const statusClass = course.estadoKey === "inactivo"
+  const estadoId = Number(course.estado.id);
+  const statusClass = estadoId === 4
     ? "inactive"
-    : course.estadoKey === "borrador"
+    : estadoId === 1
       ? "draft"
       : "active";
 
   badge.className = `course-state-badge ${statusClass}`;
-  badge.textContent = course.estado;
+  badge.textContent = course.estado.descripcion;
   cell.appendChild(badge);
   return cell;
 }
@@ -142,28 +127,32 @@ function createActionsCell(course) {
   const actions = document.createElement("div");
   actions.className = "course-actions";
 
-  actions.append(
-    createIconButton("view", "Ver curso", "M12 5c5 0 9 5.5 9 7s-4 7-9 7-9-5.5-9-7 4-7 9-7Zm0 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z", course.idCurso),
-    createIconButton("edit", "Editar curso", "M4 17.2V21h3.8L18.9 9.9l-3.8-3.8L4 17.2ZM20.7 8.1a1 1 0 0 0 0-1.4l-3.4-3.4a1 1 0 0 0-1.4 0l-1.4 1.4 4.8 4.8 1.4-1.4Z", course.idCurso),
-    createIconButton("delete", "Eliminar curso", "M7 21a2 2 0 0 1-2-2V7h14v12a2 2 0 0 1-2 2H7ZM9 4h6l1 2h5v2H3V6h5l1-2Zm0 7v6h2v-6H9Zm4 0v6h2v-6h-2Z", course.idCurso)
-  );
+  const viewButton = createIconButton("view", "Ver curso", "M12 5c5 0 9 5.5 9 7s-4 7-9 7-9-5.5-9-7 4-7 9-7Zm0 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z", course.id);
+  const editButton = createIconButton("edit", "Editar curso", "M4 17.2V21h3.8L18.9 9.9l-3.8-3.8L4 17.2ZM20.7 8.1a1 1 0 0 0 0-1.4l-3.4-3.4a1 1 0 0 0-1.4 0l-1.4 1.4 4.8 4.8 1.4-1.4Z", course.id);
+  const deleteButton = createIconButton("delete", "Eliminar curso", "M7 21a2 2 0 0 1-2-2V7h14v12a2 2 0 0 1-2 2H7ZM9 4h6l1 2h5v2H3V6h5l1-2Zm0 7v6h2v-6H9Zm4 0v6h2v-6h-2Z", course.id);
 
+  if (Number(course.estado.id) === 4) {
+    editButton.disabled = true;
+    deleteButton.disabled = true;
+  }
+
+  actions.append(viewButton, editButton, deleteButton);
   cell.appendChild(actions);
   return cell;
 }
 
-function createCourseRow(course, index) {
-  const normalizedCourse = normalizeCourse(course, index);
+function createCourseRow(course) {
+  const normalizedCourse = normalizeCourse(course);
   const row = document.createElement("tr");
-  row.dataset.id = normalizedCourse.idCurso;
+  row.dataset.id = normalizedCourse.id;
 
   row.append(
     createCell(normalizedCourse.id),
     createCell(normalizedCourse.nombre),
     createCell(formatDate(normalizedCourse.fechaInicio)),
-    createCell(formatDate(normalizedCourse.fechaFin)),
-    createCell(normalizedCourse.cupoMax),
-    createCell(normalizedCourse.inscriptos),
+    createCell(normalizedCourse.cantidadHoras),
+    createCell(normalizedCourse.inscriptosMax),
+    createCell(normalizedCourse.inscriptosConfirmados),
     createStatusCell(normalizedCourse),
     createActionsCell(normalizedCourse)
   );
@@ -171,65 +160,17 @@ function createCourseRow(course, index) {
   return row;
 }
 
-function saveCourses(courses) {
-  localStorage.setItem(coursesStorageKey, JSON.stringify(courses));
-}
-
-function getStoredCourses() {
-  const storedCourses = localStorage.getItem(coursesStorageKey);
-
-  if (!storedCourses) {
-    return null;
-  }
-
-  try {
-    const courses = JSON.parse(storedCourses);
-    return Array.isArray(courses) ? courses : null;
-  } catch {
-    return null;
-  }
-}
-
-async function getJsonCourses() {
-  const response = await fetch("../js/cursos.json");
-
-  if (!response.ok) {
-    throw new Error("No se pudo cargar cursos.json");
-  }
-
-  const courses = await response.json();
-  return Array.isArray(courses) ? courses : [];
-}
-
-async function loadCourses() {
-  const storedCourses = getStoredCourses();
-
-  if (storedCourses) {
-    allCourses = storedCourses;
-  } else {
-    allCourses = await getJsonCourses();
-    saveCourses(allCourses);
-  }
-
-  renderCourses(applyFilters());
-}
-
-function applyFilters() {
-  const search = nameFilter?.value.trim().toLowerCase() ?? "";
-  const status = statusFilter?.value ?? "";
+function applyClientFilters(courses) {
   const enrollment = enrollmentFilter?.value ?? "";
 
-  return allCourses.filter((course, index) => {
-    const normalizedCourse = normalizeCourse(course, index);
-    const hasCapacity = Number(normalizedCourse.inscriptos) < Number(normalizedCourse.cupoMax);
+  if (!enrollment) {
+    return courses;
+  }
 
-    return normalizedCourse.nombre.toLowerCase().includes(search)
-      && (!status || normalizedCourse.estadoKey === status)
-      && (
-        !enrollment
-        || (enrollment === "con-cupo" && hasCapacity)
-        || (enrollment === "sin-cupo" && !hasCapacity)
-      );
+  return courses.filter((course) => {
+    const normalizedCourse = normalizeCourse(course);
+    const hasCapacity = Number(normalizedCourse.inscriptosConfirmados) < Number(normalizedCourse.inscriptosMax);
+    return enrollment === "con-cupo" ? hasCapacity : !hasCapacity;
   });
 }
 
@@ -238,7 +179,8 @@ function renderCourses(courses) {
     return;
   }
 
-  coursesTableBody.replaceChildren(...courses.map(createCourseRow));
+  const rows = courses.map(createCourseRow);
+  coursesTableBody.replaceChildren(...rows);
 
   if (resultsText) {
     const total = courses.length;
@@ -248,73 +190,96 @@ function renderCourses(courses) {
   }
 }
 
-function findCourseById(id) {
-  return allCourses.find((course, index) => String(normalizeCourse(course, index).idCurso) === String(id));
-}
+function buildCourseQuery() {
+  const params = new URLSearchParams();
+  const name = nameFilter?.value.trim();
+  const status = statusFilter?.value;
 
-function showCourse(id) {
-  const course = findCourseById(id);
-
-  if (!course) {
-    alert("No se encontro el curso.");
-    return;
+  if (name) {
+    params.set("nombre", name);
   }
 
-  const normalizedCourse = normalizeCourse(course, 0);
-  alert(`${normalizedCourse.nombre}\nInicio: ${formatDate(normalizedCourse.fechaInicio)}\nFin: ${formatDate(normalizedCourse.fechaFin)}\nCupo: ${normalizedCourse.cupoMax}\nEstado: ${normalizedCourse.estado}`);
+  if (status) {
+    params.set("estado", status);
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
 }
 
-function deleteCourse(id) {
+async function loadCourses() {
+  setLoading();
+
+  try {
+    const result = await requestApi(`/api/cursos${buildCourseQuery()}`);
+    allCourses = Array.isArray(result.data) ? result.data : [];
+    renderCourses(applyClientFilters(allCourses));
+  } catch (error) {
+    console.error(error);
+    allCourses = [];
+    renderCourses([]);
+    alert(`No se pudieron cargar los cursos: ${error.message}`);
+  }
+}
+
+async function findCourseById(id) {
+  const result = await requestApi(`/api/cursos/${id}`);
+  return result.data;
+}
+
+async function showCourse(id) {
+  try {
+    const course = normalizeCourse(await findCourseById(id));
+    alert(`${course.nombre}\nDescripcion: ${course.descripcion || "-"}\nInicio: ${formatDate(course.fechaInicio)}\nHoras: ${course.cantidadHoras}\nCupo: ${course.inscriptosMax}\nInscriptos: ${course.inscriptosConfirmados}\nEstado: ${course.estado.descripcion}`);
+  } catch (error) {
+    console.error(error);
+    alert(`No se pudo cargar el curso: ${error.message}`);
+  }
+}
+
+async function deleteCourse(id) {
   const confirmed = confirm("Seguro que queres eliminar este curso?");
 
   if (!confirmed) {
     return;
   }
 
-  allCourses = allCourses.filter((course, index) => String(normalizeCourse(course, index).idCurso) !== String(id));
-  saveCourses(allCourses);
-  renderCourses(applyFilters());
-}
-
-function getNextCourseId() {
-  return allCourses.reduce((maxId, course, index) => {
-    const courseId = Number(normalizeCourse(course, index).idCurso);
-    return Number.isNaN(courseId) ? maxId : Math.max(maxId, courseId);
-  }, 0) + 1;
+  try {
+    const result = await requestApi(`/api/cursos/${id}`, { method: "DELETE" });
+    alert(result.message);
+    await loadCourses();
+  } catch (error) {
+    console.error(error);
+    alert(`No se pudo eliminar el curso: ${error.message}`);
+  }
 }
 
 function getCourseFormData() {
   return {
-    idCurso: editingCourseId ? Number(editingCourseId) : getNextCourseId(),
     nombre: courseNameInput?.value.trim() ?? "",
     descripcion: courseDescriptionInput?.value.trim() ?? "",
-    fechaInicio: courseStartDateInput?.value ? `${courseStartDateInput.value}T03:00:00.000Z` : "",
-    fechaFin: courseEndDateInput?.value ? `${courseEndDateInput.value}T03:00:00.000Z` : "",
-    inscripcionHabilitada: courseEnrollmentEnabledInput?.value ?? "si",
+    fechaInicio: courseStartDateInput?.value ?? "",
+    cantidadHoras: Number(courseHoursInput?.value ?? 0),
     inscriptosMax: Number(courseCapacityInput?.value ?? 0),
-    inscriptosConfirmados: 0,
-    estado: (courseStatusInput?.value ?? "borrador").toUpperCase()
+    idCursoEstado: Number(courseStatusInput?.value ?? 1)
   };
 }
 
 function fillCourseForm(course) {
-  const normalizedCourse = normalizeCourse(course, 0);
+  const normalizedCourse = normalizeCourse(course);
 
   courseNameInput.value = normalizedCourse.nombre === "-" ? "" : normalizedCourse.nombre;
   courseDescriptionInput.value = normalizedCourse.descripcion;
   courseStartDateInput.value = formatDateForInput(normalizedCourse.fechaInicio);
-  courseEndDateInput.value = formatDateForInput(normalizedCourse.fechaFin);
-  courseEnrollmentEnabledInput.value = course.inscripcionHabilitada ?? "si";
-  courseCapacityInput.value = normalizedCourse.cupoMax;
-  courseStatusInput.value = normalizedCourse.estadoKey;
+  courseHoursInput.value = normalizedCourse.cantidadHoras;
+  courseCapacityInput.value = normalizedCourse.inscriptosMax;
+  courseStatusInput.value = String(normalizedCourse.estado.id || 1);
 }
 
 async function setupCourseForm() {
   if (!courseForm) {
     return;
   }
-
-  await loadCourses();
 
   const params = new URLSearchParams(window.location.search);
   editingCourseId = params.get("id");
@@ -323,55 +288,59 @@ async function setupCourseForm() {
     return;
   }
 
-  const course = findCourseById(editingCourseId);
+  try {
+    const course = await findCourseById(editingCourseId);
 
-  if (!course) {
-    alert("No se encontro el curso.");
+    if (Number(course.estado?.id) === 4) {
+      alert("No se puede editar un curso eliminado.");
+      window.location.href = "cursos.html";
+      return;
+    }
+
+    fillCourseForm(course);
+
+    if (courseFormHeading) {
+      courseFormHeading.textContent = "Editar Curso";
+    }
+
+    if (courseFormIntro) {
+      courseFormIntro.textContent = "Actualice los datos del curso";
+    }
+  } catch (error) {
+    console.error(error);
+    alert(`No se encontro el curso: ${error.message}`);
     window.location.href = "cursos.html";
-    return;
-  }
-
-  fillCourseForm(course);
-
-  if (courseFormHeading) {
-    courseFormHeading.textContent = "Editar Curso";
-  }
-
-  if (courseFormIntro) {
-    courseFormIntro.textContent = "Actualice los datos del curso";
   }
 }
 
-function saveCourse(event) {
+async function saveCourse(event) {
   event.preventDefault();
 
   const course = getCourseFormData();
 
-  if (!course.nombre || !course.fechaInicio || !course.fechaFin || course.inscriptosMax <= 0) {
+  if (!course.nombre || !course.fechaInicio || course.cantidadHoras <= 0 || course.inscriptosMax <= 0) {
     alert("Complete los campos obligatorios del curso.");
     return;
   }
 
-  if (editingCourseId) {
-    allCourses = allCourses.map((currentCourse, index) => {
-      const normalizedCourse = normalizeCourse(currentCourse, index);
+  const url = editingCourseId ? `/api/cursos/${editingCourseId}` : "/api/cursos";
+  const method = editingCourseId ? "PUT" : "POST";
 
-      if (String(normalizedCourse.idCurso) !== String(editingCourseId)) {
-        return currentCourse;
-      }
-
-      return {
-        ...currentCourse,
-        ...course,
-        inscriptosConfirmados: currentCourse.inscriptosConfirmados ?? currentCourse.inscriptos_confirmados ?? 0
-      };
+  try {
+    const result = await requestApi(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(course)
     });
-  } else {
-    allCourses = [...allCourses, course];
-  }
 
-  saveCourses(allCourses);
-  window.location.href = "cursos.html";
+    alert(result.message);
+    window.location.href = "cursos.html";
+  } catch (error) {
+    console.error(error);
+    alert(`No se pudo guardar el curso: ${error.message}`);
+  }
 }
 
 function handleTableClick(event) {
@@ -403,26 +372,24 @@ function clearFilters() {
     enrollmentFilter.value = "";
   }
 
-  renderCourses(applyFilters());
+  loadCourses();
 }
 
-searchButton?.addEventListener("click", () => renderCourses(applyFilters()));
+searchButton?.addEventListener("click", loadCourses);
 clearButton?.addEventListener("click", clearFilters);
+enrollmentFilter?.addEventListener("change", () => renderCourses(applyClientFilters(allCourses)));
 nameFilter?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
-    renderCourses(applyFilters());
+    loadCourses();
   }
 });
 coursesTableBody?.addEventListener("click", handleTableClick);
 courseForm?.addEventListener("submit", saveCourse);
 
 if (coursesTableBody) {
-  loadCourses().catch((error) => {
-    console.error(error);
-    renderCourses([]);
-  });
+  loadCourses();
 }
 
 if (courseForm) {
-  setupCourseForm().catch(console.error);
+  setupCourseForm();
 }

@@ -96,16 +96,8 @@
               </div>
 
               <div class="col-12 col-lg-6">
-                <label class="form-label" for="courseEndDate">Fecha de Fin <span>*</span></label>
-                <input class="form-control admin-control" id="courseEndDate" name="fecha_fin" type="date" required>
-              </div>
-
-              <div class="col-12 col-lg-6">
-                <label class="form-label" for="courseEnrollmentEnabled">Inscripcion Habilitada</label>
-                <select class="form-select admin-control" id="courseEnrollmentEnabled" name="inscripcion_habilitada">
-                  <option value="si">Si</option>
-                  <option value="no">No</option>
-                </select>
+                <label class="form-label" for="courseHours">Cantidad de horas <span>*</span></label>
+                <input class="form-control admin-control" id="courseHours" name="cantidad_horas" type="number" min="1" placeholder="Cantidad de horas" required>
               </div>
 
               <div class="col-12 col-lg-6">
@@ -116,9 +108,9 @@
               <div class="col-12 col-lg-6">
                 <label class="form-label" for="courseStatus">Estado</label>
                 <select class="form-select admin-control" id="courseStatus" name="estado">
-                  <option value="activo">Activo</option>
-                  <option value="inactivo">Inactivo</option>
-                  <option value="borrador">Borrador</option>
+                  <option value="1">Borrador</option>
+                  <option value="2">Inscripcion abierta</option>
+                  <option value="3">Inscripcion cerrada</option>
                 </select>
               </div>
             </div>

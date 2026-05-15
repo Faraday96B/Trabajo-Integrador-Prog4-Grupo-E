@@ -6,6 +6,7 @@
 
 const cursoModel = require('../models/curso.model');
 const pdfService = require('./pdf.service');
+const { toCursoInput, toCursoListResponse, toCursoResponse } = require('../dtos/curso.dto');
 
 async function validarCurso(data) {
   const errores = [];
@@ -188,7 +189,7 @@ async function listarCursos(filtros = {}) {
   return {
     ok: true,
     message: 'Listado de cursos obtenido correctamente.',
-    data: cursos,
+    data: toCursoListResponse(cursos),
   };
 }
 
@@ -198,36 +199,39 @@ async function obtenerCursoPorId(idCurso) {
   return {
     ok: Boolean(curso),
     message: curso ? 'Curso obtenido correctamente.' : 'Curso no encontrado.',
-    data: curso,
+    data: toCursoResponse(curso),
   };
 }
 
 async function crearCurso(data) {
-  const validacion = await validarCurso(data);
-  const validacionEstado = await validarEstadoCurso(data.id_curso_estado ?? 1);
+  const cursoInput = toCursoInput(data);
+  const validacion = await validarCurso(cursoInput);
+  const validacionEstado = await validarEstadoCurso(cursoInput.id_curso_estado ?? 1);
   const cursoValidado = validacion.data.curso;
 
-  const curso = await cursoModel.crear({
+  const cursoCreado = await cursoModel.crear({
     ...cursoValidado,
     id_curso_estado: validacionEstado.data.estado,
-    id_usuario_modificacion: data.id_usuario_modificacion ?? 1,
+    id_usuario_modificacion: cursoInput.id_usuario_modificacion,
   });
+  const curso = cursoCreado ? await cursoModel.obtenerPorId(cursoCreado.id_curso) : null;
 
   return {
     ok: true,
     message: 'Curso creado correctamente.',
-    data: curso,
+    data: toCursoResponse(curso),
   };
 }
 
 async function actualizarCurso(idCurso, data) {
-  const validacionCurso = await validarCurso(data);
-  const validacionEstado = await validarEstadoCurso(data.id_curso_estado);
+  const cursoInput = toCursoInput(data);
+  const validacionCurso = await validarCurso(cursoInput);
+  const validacionEstado = await validarEstadoCurso(cursoInput.id_curso_estado);
   const cursoValidado = validacionCurso.data.curso;
 
   const cursoActualizado = {
     ...cursoValidado,
-    id_usuario_modificacion: data.id_usuario_modificacion ?? 1,
+    id_usuario_modificacion: cursoInput.id_usuario_modificacion,
   };
 
   if (
@@ -238,12 +242,13 @@ async function actualizarCurso(idCurso, data) {
     cursoActualizado.id_curso_estado = validacionEstado.data.estado;
   }
 
-  const curso = await cursoModel.actualizar(idCurso, cursoActualizado);
+  const cursoEditado = await cursoModel.actualizar(idCurso, cursoActualizado);
+  const curso = cursoEditado ? await cursoModel.obtenerPorId(idCurso) : null;
 
   return {
     ok: Boolean(curso),
     message: curso ? 'Curso actualizado correctamente.' : 'Curso no encontrado.',
-    data: curso,
+    data: toCursoResponse(curso),
   };
 }
 
@@ -264,12 +269,13 @@ async function eliminarCurso(idCurso) {
     throw error;
   }
 
-  const curso = await cursoModel.bajaLogica(idCurso, 1);
+  const cursoEliminado = await cursoModel.bajaLogica(idCurso, 1);
+  const curso = cursoEliminado ? await cursoModel.obtenerPorId(idCurso) : null;
 
   return {
     ok: Boolean(curso),
     message: curso ? 'Curso dado de baja logica correctamente.' : 'Curso no encontrado.',
-    data: curso,
+    data: toCursoResponse(curso),
   };
 }
 
@@ -315,4 +321,3 @@ module.exports = {
   eliminarCurso,
   generarDiploma,
 };
-
