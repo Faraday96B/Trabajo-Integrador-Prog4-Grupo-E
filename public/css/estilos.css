@@ -489,6 +489,20 @@ body {
   width: 50px;
 }
 
+.admin-brand-logo img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.admin-brand-logo-square {
+  border-radius: 0;
+  height: 58px;
+  overflow: hidden;
+  width: 58px;
+}
+
 .admin-brand strong {
   color: var(--admin-blue);
   display: block;
@@ -984,6 +998,12 @@ body {
   height: 100%;
   object-fit: cover;
   width: 100%;
+}
+
+.courses-admin-page .admin-brand-logo-square {
+  border-radius: 0;
+  height: 58px;
+  width: 58px;
 }
 
 .courses-admin-page .admin-brand strong {
