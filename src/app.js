@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const cursosRoutes = require('./routes/cursos.routes');
+const inscripcionesRoutes = require('./routes/inscripciones.routes');
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.get('/cursos', (req, res) => {
 });
 
 app.use('/api/cursos', cursosRoutes);
+// TODO: proteger con verificarJWT cuando este lista la autenticacion.
+app.use('/api/inscripciones', inscripcionesRoutes);
 
 app.use((error, req, res, next) => {
   console.error('ERROR REAL:', error);

@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cursos | FCAD Cursos</title>
+  <title>Inscripciones | FCAD Cursos</title>
   <link rel="stylesheet" href="../css/bootstrap.min.css">
   <link rel="stylesheet" href="../css/estilos.css">
 </head>
 <body class="admin-dashboard courses-admin-page">
   <div class="admin-shell">
-    <aside class="admin-sidebar" aria-label="Navegacion principal">
+    <aside class="admin-sidebar" aria-label="Navegación principal">
       <a class="admin-brand" href="dashboard.html" aria-label="FCAD UNER - Inicio">
         <span class="admin-brand-logo admin-brand-logo-square" aria-hidden="true">
           <img src="../assets/img/Logo.png" alt="">
         </span>
         <span>
           <strong>FCAD - UNER</strong>
-          <small>Sistema de Inscripcion<br>a Cursos</small>
+          <small>Sistema de Inscripción<br>a Cursos</small>
         </span>
       </a>
 
@@ -55,7 +55,7 @@
           <span class="admin-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M4 3h9v3H7v12h6v3H4V3Zm12.6 4.4 5.1 5.1-5.1 5.1-2.1-2.1 1.5-1.5H10v-3h6l-1.5-1.5 2.1-2.1Z"/></svg>
           </span>
-          Cerrar sesion
+          Cerrar sesión
         </a>
       </nav>
     </aside>
@@ -72,13 +72,97 @@
         </div>
       </header>
 
-      <main>
+      <main class="admin-main courses-admin-main">
+        <div class="courses-header">
+          <div>
+            <h1>Inscripciones</h1>
+            <p>Gestione las inscripciones a cursos</p>
+          </div>
+        </div>
+
+        <section class="courses-filter-panel" aria-label="Filtros de inscripciones">
+          <div class="row g-4 align-items-end">
+            <div class="col-12 col-lg-4">
+              <label class="form-label" for="enrollmentSearchFilter">Buscar estudiante</label>
+              <input class="form-control admin-control" id="enrollmentSearchFilter" type="search" placeholder="Apellido, nombre o documento">
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <label class="form-label" for="enrollmentCourseFilter">Curso</label>
+              <select class="form-select admin-control" id="enrollmentCourseFilter">
+                <option value="">Todos</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <label class="form-label" for="enrollmentStatusFilter">Estado</label>
+              <select class="form-select admin-control" id="enrollmentStatusFilter">
+                <option value="">Todos</option>
+                <option value="1">Confirmada</option>
+                <option value="2">Cancelada</option>
+              </select>
+            </div>
+            <div class="col-6 col-lg-1">
+              <button class="secondary-admin-button search-button" id="searchEnrollments" type="button">Buscar</button>
+            </div>
+            <div class="col-6 col-lg-1">
+              <button class="light-admin-button clear-button" id="clearEnrollments" type="button">Limpiar</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="courses-filter-panel" aria-label="Nueva inscripción">
+          <div class="row g-4 align-items-end">
+            <div class="col-12 col-lg-5">
+              <label class="form-label" for="enrollmentStudentInput">Estudiante</label>
+              <select class="form-select admin-control" id="enrollmentStudentInput">
+                <option value="">Seleccione un estudiante</option>
+              </select>
+            </div>
+            <div class="col-12 col-lg-5">
+              <label class="form-label" for="enrollmentCourseInput">Curso</label>
+              <select class="form-select admin-control" id="enrollmentCourseInput">
+                <option value="">Seleccione un curso</option>
+              </select>
+            </div>
+            <div class="col-12 col-lg-2">
+              <button class="primary-admin-button w-100" id="createEnrollment" type="button">Inscribir</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="courses-table-card" aria-label="Listado de inscripciones">
+          <div class="table-responsive">
+            <table class="table admin-list-table align-middle">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Estudiante</th>
+                  <th>Documento</th>
+                  <th>Curso</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="enrollmentsTableBody"></tbody>
+            </table>
+          </div>
+
+          <nav class="admin-pagination" aria-label="Paginación de inscripciones">
+            <button type="button" aria-label="Primera página">«</button>
+            <button type="button" aria-label="Página anterior">‹</button>
+            <button class="active" type="button" aria-current="page">1</button>
+            <button type="button" aria-label="Página siguiente">›</button>
+            <button type="button" aria-label="Última página">»</button>
+          </nav>
+
+          <p class="courses-results" id="enrollmentsResults">Mostrando 0 resultados</p>
+        </section>
 
       </main>
     </div>
   </div>
 
   <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../js/cursos.js"></script>
+  <script src="../js/inscripciones.js"></script>
 </body>
 </html>

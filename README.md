@@ -38,3 +38,19 @@ npm start
 - `scripts/`: scripts auxiliares del proyecto
 - `.env.example`: variables de entorno de referencia
 - `package.json`: dependencias y scripts
+
+## Contrato inicial de inscripciones
+
+- `GET /api/inscripciones`: listado con filtros y paginacion.
+- `GET /api/inscripciones/:id`: detalle de una inscripcion.
+- `POST /api/inscripciones`: alta de una inscripcion.
+- `DELETE /api/inscripciones/:id`: baja logica, cambia el estado a cancelada.
+- `GET /api/inscripciones/:id/diploma`: diploma individual en PDF.
+
+Validaciones pendientes para implementar en la capa de servicios:
+
+- Validar curso y estudiante obligatorios.
+- No permitir inscripciones duplicadas.
+- No permitir altas si el curso no tiene inscripcion habilitada.
+- No permitir altas si el curso supera el cupo `inscriptos_max`.
+- Usar `req.user.idUsuario` como `id_usuario_modificacion` cuando este listo el middleware JWT.
