@@ -252,7 +252,7 @@ async function actualizarCurso(idCurso, data) {
   };
 }
 
-async function eliminarCurso(idCurso) {
+async function eliminarCurso(idCurso, idUsuarioModificacion = 1) {
   await validarEstadoCurso(4, { permitirEliminado: true });
 
   const cursoExistente = await cursoModel.obtenerPorId(idCurso);
@@ -269,7 +269,7 @@ async function eliminarCurso(idCurso) {
     throw error;
   }
 
-  const cursoEliminado = await cursoModel.bajaLogica(idCurso, 1);
+  const cursoEliminado = await cursoModel.bajaLogica(idCurso, idUsuarioModificacion);
   const curso = cursoEliminado ? await cursoModel.obtenerPorId(idCurso) : null;
 
   return {

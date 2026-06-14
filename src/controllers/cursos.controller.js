@@ -20,7 +20,11 @@ async function obtenerPorId(req, res, next) {
 
 async function crear(req, res, next) {
   try {
-    const result = await cursosService.crearCurso(req.body);
+    const result = await cursosService.crearCurso({
+      ...req.body,
+      idUsuarioModificacion: req.user?.idUsuario,
+      id_usuario_modificacion: req.user?.idUsuario,
+    });
     return res.status(201).json(result);
   } catch (error) {
     return next(error);
@@ -29,7 +33,11 @@ async function crear(req, res, next) {
 
 async function actualizar(req, res, next) {
   try {
-    const result = await cursosService.actualizarCurso(req.params.id, req.body);
+    const result = await cursosService.actualizarCurso(req.params.id, {
+      ...req.body,
+      idUsuarioModificacion: req.user?.idUsuario,
+      id_usuario_modificacion: req.user?.idUsuario,
+    });
     return res.status(result.ok ? 200 : 404).json(result);
   } catch (error) {
     return next(error);
@@ -38,7 +46,7 @@ async function actualizar(req, res, next) {
 
 async function eliminar(req, res, next) {
   try {
-    const result = await cursosService.eliminarCurso(req.params.id);
+    const result = await cursosService.eliminarCurso(req.params.id, req.user?.idUsuario);
     return res.status(result.ok ? 200 : 404).json(result);
   } catch (error) {
     return next(error);

@@ -19,7 +19,23 @@ let allCourses = [];
 let editingCourseId = null;
 
 async function requestApi(url, options = {}) {
-  const response = await fetch(url, options);
+  if (window.apiRequest) {
+    return window.apiRequest(url, options);
+  }
+
+  const token = localStorage.getItem('token');
+  const headers = {
+    ...(options.headers || {}),
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
   const result = await response.json().catch(() => null);
 
   if (!response.ok) {
