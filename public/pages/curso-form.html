@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cursos | FCAD Cursos</title>
+  <title>Nuevo Curso | FCAD Cursos</title>
   <link rel="stylesheet" href="../css/bootstrap.min.css">
   <link rel="stylesheet" href="../css/estilos.css">
 </head>
@@ -27,13 +27,13 @@
           </span>
           Dashboard
         </a>
-        <a class="admin-nav-link active" href="estudiantes.html">
+        <a class="admin-nav-link" href="estudiantes.html">
           <span class="admin-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M8 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm8.5.5a3.25 3.25 0 1 1 0-6.5 3.25 3.25 0 0 1 0 6.5ZM2.5 20.5a5.5 5.5 0 0 1 11 0v.5h-11v-.5Zm11.5.5v-.5a7 7 0 0 0-1.4-4.2 4.75 4.75 0 0 1 8.9 2.3V21H14Z"/></svg>
           </span>
           Estudiantes
         </a>
-        <a class="admin-nav-link" href="cursos.html" aria-current="page">
+        <a class="admin-nav-link active" href="cursos.html" aria-current="page">
           <span class="admin-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="m12 3 10 5-10 5L2 8l10-5Zm-6 8.5 6 3 6-3V16c0 1.7-2.7 4-6 4s-6-2.3-6-4v-4.5Z"/></svg>
           </span>
@@ -72,8 +72,56 @@
         </div>
       </header>
 
-      <main>
+      <main class="admin-main courses-admin-main">
+        <div class="course-form-heading">
+          <h1>Nuevo Curso</h1>
+          <p>Complete los datos del curso</p>
+        </div>
 
+        <section class="course-form-card" aria-label="Formulario de nuevo curso">
+          <form class="course-form">
+            <div class="row g-4 g-xl-5">
+              <div class="col-12 col-lg-6">
+                <label class="form-label" for="courseName">Nombre <span>*</span></label>
+                <input class="form-control admin-control" id="courseName" name="nombre" type="text" placeholder="Nombre del curso" required>
+              </div>
+
+              <div class="col-12 col-lg-6">
+                <label class="form-label" for="courseDescription">Descripcion</label>
+                <textarea class="form-control admin-control course-description" id="courseDescription" name="descripcion" placeholder="Descripcion del curso"></textarea>
+              </div>
+
+              <div class="col-12 col-lg-6">
+                <label class="form-label" for="courseStartDate">Fecha de Inicio <span>*</span></label>
+                <input class="form-control admin-control" id="courseStartDate" name="fecha_inicio" type="date" required>
+              </div>
+
+              <div class="col-12 col-lg-6">
+                <label class="form-label" for="courseHours">Cantidad de horas <span>*</span></label>
+                <input class="form-control admin-control" id="courseHours" name="cantidad_horas" type="number" min="1" placeholder="Cantidad de horas" required>
+              </div>
+
+              <div class="col-12 col-lg-6">
+                <label class="form-label" for="courseCapacity">Cupo Maximo <span>*</span></label>
+                <input class="form-control admin-control" id="courseCapacity" name="inscriptos_max" type="number" min="1" placeholder="Cupo maximo" required>
+              </div>
+
+              <div class="col-12 col-lg-6">
+                <label class="form-label" for="courseStatus">Estado</label>
+                <select class="form-select admin-control" id="courseStatus" name="estado">
+                  <option value="1">Borrador</option>
+                  <option value="2">Inscripcion abierta</option>
+                  <option value="3">Inscripcion cerrada</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="course-form-actions">
+              <a class="light-admin-button form-cancel-button" href="cursos.html">Cancelar</a>
+              <button class="primary-admin-button form-save-button" type="submit">Guardar</button>
+            </div>
+          </form>
+        </section>
       </main>
     </div>
   </div>
@@ -81,6 +129,6 @@
   <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
-  <script src="../js/estudiantes.js"></script>
+  <script src="../js/cursos.js"></script>
 </body>
 </html>

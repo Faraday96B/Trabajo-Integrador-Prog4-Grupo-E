@@ -3,10 +3,49 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login</title>
+  <title>Login | FCAD Cursos</title>
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/estilos.css">
 </head>
-<body>
-  <h1>hola</h1>
-  <!-- TODO: Pantalla de inicio de sesion. -->
+<body class="admin-dashboard login-page">
+  <main class="login-shell">
+    <section class="login-card" aria-label="Inicio de sesion">
+      <div class="login-brand">
+        <span class="admin-brand-logo admin-brand-logo-square" aria-hidden="true">
+          <img src="../assets/img/Logo.png" alt="">
+        </span>
+        <div>
+          <strong>FCAD - UNER</strong>
+          <span>Sistema de Inscripcion a Cursos</span>
+        </div>
+      </div>
+
+      <div class="login-heading">
+        <p>Panel administrativo</p>
+        <h1>Iniciar sesion</h1>
+      </div>
+
+      <form id="loginForm" class="login-form" novalidate>
+        <div>
+          <label class="form-label" for="nombreUsuario">Usuario</label>
+          <input class="form-control admin-control" id="nombreUsuario" name="nombreUsuario" type="text" autocomplete="username" placeholder="Ej: lbianchi" required>
+        </div>
+
+        <div>
+          <label class="form-label" for="contrasenia">Contrasenia</label>
+          <input class="form-control admin-control" id="contrasenia" name="contrasenia" type="password" autocomplete="current-password" placeholder="Usuario.1" required>
+        </div>
+
+        <p id="loginMessage" class="login-message" hidden></p>
+
+        <button id="loginButton" class="primary-admin-button login-button" type="submit">Ingresar</button>
+      </form>
+
+      <p class="login-help">Use el usuario asignado y la contrasenia con formato <strong>Usuario.id</strong>.</p>
+    </section>
+  </main>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
 </body>
 </html>

@@ -1,1 +1,21 @@
-// TODO: Definir rutas de inscripciones.
+const express = require('express');
+const inscripcionesController = require('../controllers/inscripciones.controller');
+
+const router = express.Router();
+
+// Browse: listado con filtros y paginacion.
+router.get('/', inscripcionesController.listar);
+
+// Add: alta de una inscripcion.
+router.post('/', inscripcionesController.crear);
+
+// Generacion / impresion de diploma individual.
+router.get('/:id/diploma', inscripcionesController.diploma);
+
+// Read: detalle de una inscripcion.
+router.get('/:id', inscripcionesController.obtenerPorId);
+
+// Delete: baja logica, cambia la inscripcion a CANCELADA.
+router.delete('/:id', inscripcionesController.cancelar);
+
+module.exports = router;

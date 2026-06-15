@@ -3,9 +3,168 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inscripciones</title>
+  <title>Inscripciones | FCAD Cursos</title>
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/estilos.css">
 </head>
-<body>
-  <!-- TODO: Gestion de inscripciones con validaciones. -->
+<body class="admin-dashboard courses-admin-page">
+  <div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="Navegación principal">
+      <a class="admin-brand" href="dashboard.html" aria-label="FCAD UNER - Inicio">
+        <span class="admin-brand-logo admin-brand-logo-square" aria-hidden="true">
+          <img src="../assets/img/Logo.png" alt="">
+        </span>
+        <span>
+          <strong>FCAD - UNER</strong>
+          <small>Sistema de Inscripción<br>a Cursos</small>
+        </span>
+      </a>
+
+      <nav class="admin-nav">
+        <a class="admin-nav-link" href="dashboard.html">
+          <span class="admin-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 11.2 12 4l9 7.2v8.3a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 19.5v-8.3Z"/></svg>
+          </span>
+          Dashboard
+        </a>
+        <a class="admin-nav-link" href="estudiantes.html">
+          <span class="admin-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm8.5.5a3.25 3.25 0 1 1 0-6.5 3.25 3.25 0 0 1 0 6.5ZM2.5 20.5a5.5 5.5 0 0 1 11 0v.5h-11v-.5Zm11.5.5v-.5a7 7 0 0 0-1.4-4.2 4.75 4.75 0 0 1 8.9 2.3V21H14Z"/></svg>
+          </span>
+          Estudiantes
+        </a>
+        <a class="admin-nav-link" href="cursos.html" aria-current="page">
+          <span class="admin-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m12 3 10 5-10 5L2 8l10-5Zm-6 8.5 6 3 6-3V16c0 1.7-2.7 4-6 4s-6-2.3-6-4v-4.5Z"/></svg>
+          </span>
+          Cursos
+        </a>
+        <a class="admin-nav-link active" href="inscripciones.html">
+          <span class="admin-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M7 2h10v3h3v17H4V5h3V2Zm2 3h6V4H9v1Zm-2 5v2h10v-2H7Zm0 4v2h10v-2H7Z"/></svg>
+          </span>
+          Inscripciones
+        </a>
+        <a class="admin-nav-link" href="#">
+          <span class="admin-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm-8 9a8 8 0 1 1 16 0H4Z"/></svg>
+          </span>
+          Usuarios
+        </a>
+        <a class="admin-nav-link admin-logout" href="login.html">
+          <span class="admin-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 3h9v3H7v12h6v3H4V3Zm12.6 4.4 5.1 5.1-5.1 5.1-2.1-2.1 1.5-1.5H10v-3h6l-1.5-1.5 2.1-2.1Z"/></svg>
+          </span>
+          Cerrar sesión
+        </a>
+      </nav>
+    </aside>
+
+    <div class="admin-content">
+      <header class="admin-topbar">
+        <div class="ms-auto">
+          <button class="admin-user" type="button">
+            <span class="admin-avatar" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm-8 9a8 8 0 0 1 16 0H4Z"/></svg>
+            </span>
+            <span>Admin</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="admin-main courses-admin-main">
+        <div class="courses-header">
+          <div>
+            <h1>Inscripciones</h1>
+            <p>Gestione las inscripciones a cursos</p>
+          </div>
+        </div>
+
+        <section class="courses-filter-panel" aria-label="Filtros de inscripciones">
+          <div class="row g-4 align-items-end">
+            <div class="col-12 col-lg-4">
+              <label class="form-label" for="enrollmentSearchFilter">Buscar estudiante</label>
+              <input class="form-control admin-control" id="enrollmentSearchFilter" type="search" placeholder="Apellido, nombre o documento">
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <label class="form-label" for="enrollmentCourseFilter">Curso</label>
+              <select class="form-select admin-control" id="enrollmentCourseFilter">
+                <option value="">Todos</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+              <label class="form-label" for="enrollmentStatusFilter">Estado</label>
+              <select class="form-select admin-control" id="enrollmentStatusFilter">
+                <option value="">Todos</option>
+                <option value="1">Confirmada</option>
+                <option value="2">Cancelada</option>
+              </select>
+            </div>
+            <div class="col-6 col-lg-1">
+              <button class="secondary-admin-button search-button" id="searchEnrollments" type="button">Buscar</button>
+            </div>
+            <div class="col-6 col-lg-1">
+              <button class="light-admin-button clear-button" id="clearEnrollments" type="button">Limpiar</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="courses-filter-panel" aria-label="Nueva inscripción">
+          <div class="row g-4 align-items-end">
+            <div class="col-12 col-lg-5">
+              <label class="form-label" for="enrollmentStudentInput">Estudiante</label>
+              <select class="form-select admin-control" id="enrollmentStudentInput">
+                <option value="">Seleccione un estudiante</option>
+              </select>
+            </div>
+            <div class="col-12 col-lg-5">
+              <label class="form-label" for="enrollmentCourseInput">Curso</label>
+              <select class="form-select admin-control" id="enrollmentCourseInput">
+                <option value="">Seleccione un curso</option>
+              </select>
+            </div>
+            <div class="col-12 col-lg-2">
+              <button class="primary-admin-button w-100" id="createEnrollment" type="button">Inscribir</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="courses-table-card" aria-label="Listado de inscripciones">
+          <div class="table-responsive">
+            <table class="table admin-list-table align-middle">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Estudiante</th>
+                  <th>Documento</th>
+                  <th>Curso</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="enrollmentsTableBody"></tbody>
+            </table>
+          </div>
+
+          <nav class="admin-pagination" aria-label="Paginación de inscripciones">
+            <button type="button" aria-label="Primera página">«</button>
+            <button type="button" aria-label="Página anterior">‹</button>
+            <button class="active" type="button" aria-current="page">1</button>
+            <button type="button" aria-label="Página siguiente">›</button>
+            <button type="button" aria-label="Última página">»</button>
+          </nav>
+
+          <p class="courses-results" id="enrollmentsResults">Mostrando 0 resultados</p>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/inscripciones.js"></script>
 </body>
 </html>
