@@ -12,6 +12,20 @@ function normalizarCursoInput(cursoInput) {
   };
 }
 
+function crearError(message, status = 400) {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+}
+
+async function validarNombreUnico(nombre, excluirId = null) {
+  const existeNombre = await cursoModel.existeNombre(nombre, excluirId);
+
+  if (existeNombre) {
+    throw crearError('Ya existe un curso activo con ese nombre.');
+  }
+}
+
 async function listarCursos(filtros = {}) {
   const cursos = await cursoModel.listar(filtros);
 
@@ -35,6 +49,8 @@ async function obtenerCursoPorId(idCurso) {
 async function crearCurso(data) {
   const cursoValidado = normalizarCursoInput(toCursoInput(data));
 
+  await validarNombreUnico(cursoValidado.nombre);
+
   const cursoCreado = await cursoModel.crear({
     ...cursoValidado,
     id_usuario_modificacion: cursoValidado.id_usuario_modificacion,
@@ -50,6 +66,8 @@ async function crearCurso(data) {
 
 async function actualizarCurso(idCurso, data) {
   const cursoValidado = normalizarCursoInput(toCursoInput(data));
+
+  await validarNombreUnico(cursoValidado.nombre, idCurso);
 
   const cursoActualizado = {
     ...cursoValidado,

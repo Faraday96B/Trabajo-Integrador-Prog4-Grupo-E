@@ -3,6 +3,7 @@ const path = require('path');
 const authRoutes = require('./routes/auth.routes');
 const cursosRoutes = require('./routes/cursos.routes');
 const inscripcionesRoutes = require('./routes/inscripciones.routes');
+const estudiantesRoutes = require('./routes/estudiantes.routes');
 const { passport, verificarJWT } = require('./middleware/auth.middleware');
 
 const app = express();
@@ -26,6 +27,7 @@ app.get('/cursos', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/cursos', verificarJWT, cursosRoutes);
 app.use('/api/inscripciones', verificarJWT, inscripcionesRoutes);
+app.use('/api/estudiantes', verificarJWT, estudiantesRoutes);
 
 app.use((error, req, res, next) => {
   console.error('ERROR REAL:', error);

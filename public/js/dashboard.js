@@ -218,11 +218,22 @@ async function loadEnrollmentSummary() {
   }
 }
 
+async function loadStudentSummary() {
+  try {
+    const result = await requestApi("/api/estudiantes?limite=1");
+
+    setText(studentsTotal, result.meta?.total ?? (Array.isArray(result.data) ? result.data.length : 0));
+  } catch (error) {
+    console.error(error);
+    setText(studentsTotal, "Error");
+  }
+}
+
 function renderPendingMetrics() {
-  setText(studentsTotal, "Pendiente");
   setText(notificationsTotal, "0");
 }
 
 renderPendingMetrics();
+loadStudentSummary();
 loadCourseSummary();
 loadEnrollmentSummary();
