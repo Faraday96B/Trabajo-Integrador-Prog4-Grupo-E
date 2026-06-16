@@ -15,14 +15,11 @@ function crearError(message, status = 400) {
   return error;
 }
 
-function toPositiveInteger(value, fieldName) {
-  const numberValue = Number(value);
-
-  if (!Number.isInteger(numberValue) || numberValue <= 0) {
-    throw crearError(`${fieldName} debe ser un numero entero mayor a 0.`);
-  }
-
-  return numberValue;
+function normalizarInscripcionInput(inscripcionInput) {
+  return {
+    id_curso: Number(inscripcionInput.id_curso),
+    id_estudiante: Number(inscripcionInput.id_estudiante),
+  };
 }
 
 function buildPagination(query = {}) {
@@ -114,7 +111,7 @@ async function listarInscripciones(query = {}) {
 }
 
 async function obtenerInscripcionPorId(idInscripcion) {
-  const id = toPositiveInteger(idInscripcion, 'El id de inscripcion');
+  const id = Number(idInscripcion);
   const inscripcion = await inscripcionModel.obtenerPorId(id);
 
   return {
@@ -125,10 +122,10 @@ async function obtenerInscripcionPorId(idInscripcion) {
 }
 
 async function crearInscripcion(data, idUsuarioModificacion) {
-  const inscripcionInput = toInscripcionInput(data);
-  const idCurso = toPositiveInteger(inscripcionInput.id_curso, 'El curso');
-  const idEstudiante = toPositiveInteger(inscripcionInput.id_estudiante, 'El estudiante');
-  const idUsuario = toPositiveInteger(idUsuarioModificacion, 'El usuario de modificacion');
+  const inscripcionInput = normalizarInscripcionInput(toInscripcionInput(data));
+  const idCurso = inscripcionInput.id_curso;
+  const idEstudiante = inscripcionInput.id_estudiante;
+  const idUsuario = Number(idUsuarioModificacion);
 
   await validarCursoParaInscripcion(idCurso);
   await validarEstudianteActivo(idEstudiante);
@@ -156,8 +153,8 @@ async function crearInscripcion(data, idUsuarioModificacion) {
 }
 
 async function cancelarInscripcion(idInscripcion, idUsuarioModificacion) {
-  const id = toPositiveInteger(idInscripcion, 'El id de inscripcion');
-  const idUsuario = toPositiveInteger(idUsuarioModificacion, 'El usuario de modificacion');
+  const id = Number(idInscripcion);
+  const idUsuario = Number(idUsuarioModificacion);
   const inscripcionExistente = await inscripcionModel.obtenerPorId(id);
 
   if (!inscripcionExistente) {
@@ -208,7 +205,7 @@ async function obtenerOpcionesInscripcion() {
 }
 
 async function generarDiplomaIndividual(idInscripcion) {
-  const id = toPositiveInteger(idInscripcion, 'El id de inscripcion');
+  const id = Number(idInscripcion);
   const inscripcion = await inscripcionModel.obtenerParaDiploma(id);
 
   if (!inscripcion) {
