@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{{titulo}}</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      color: #0f172a;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+    }
+
+    .certificate {
+      border: 3px solid #0052db;
+      min-height: 100vh;
+      padding: 42px;
+      position: relative;
+    }
+
+    .header {
+      border-bottom: 1px solid #dbe4f0;
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 24px;
+    }
+
+    .brand {
+      color: #0052db;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      color: #475569;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .date {
+      color: #475569;
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .content {
+      padding: 80px 28px 60px;
+      text-align: center;
+    }
+
+    .kicker {
+      color: #0052db;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 42px;
+      line-height: 1.15;
+      margin: 20px 0 38px;
+    }
+
+    .lead {
+      color: #334155;
+      font-size: 18px;
+      line-height: 1.6;
+      margin: 0 auto 28px;
+      max-width: 650px;
+    }
+
+    .course-name {
+      border-bottom: 2px solid #0052db;
+      display: inline-block;
+      font-size: 28px;
+      font-weight: 800;
+      margin: 18px 0 28px;
+      padding: 0 24px 10px;
+    }
+
+    .details {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 52px;
+      text-align: left;
+    }
+
+    .detail {
+      background: #f8fafc;
+      border: 1px solid #dbe4f0;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .detail span {
+      color: #64748b;
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .detail strong {
+      font-size: 16px;
+    }
+
+    .footer {
+      bottom: 42px;
+      color: #64748b;
+      font-size: 13px;
+      left: 42px;
+      position: absolute;
+      right: 42px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="certificate">
+    <header class="header">
+      <div>
+        <div class="brand">FCAD - UNER</div>
+        <div class="subtitle">Sistema de Inscripcion a Cursos</div>
+      </div>
+      <div class="date">Fecha de emision<br><strong>{{fechaEmision}}</strong></div>
+    </header>
+
+    <section class="content">
+      <div class="kicker">{{titulo}}</div>
+      <h1>Certificado de curso</h1>
+      <p class="lead">Se deja constancia de la informacion registrada para el curso:</p>
+      <div class="course-name">{{nombreCurso}}</div>
+      <p class="lead">{{descripcionCurso}}</p>
+
+      <div class="details">
+        <div class="detail">
+          <span>Fecha de inicio</span>
+          <strong>{{fechaInicio}}</strong>
+        </div>
+        <div class="detail">
+          <span>Carga horaria</span>
+          <strong>{{cantidadHoras}} horas</strong>
+        </div>
+        <div class="detail">
+          <span>Estado</span>
+          <strong>{{estadoCurso}}</strong>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">Documento generado automaticamente por el sistema.</footer>
+  </main>
+</body>
+</html>

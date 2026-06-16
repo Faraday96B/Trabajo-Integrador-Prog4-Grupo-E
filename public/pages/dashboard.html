@@ -110,7 +110,7 @@
               </div>
               <div>
                 <p>Total de Cursos</p>
-                <strong>18</strong>
+                <strong id="dashboardTotalCourses">-</strong>
               </div>
               <a href="cursos.html">Ver cursos <span class="card-arrow" aria-hidden="true">→</span></a>
             </article>
@@ -123,7 +123,7 @@
               </div>
               <div>
                 <p>Total de Inscripciones</p>
-                <strong>342</strong>
+                <strong id="dashboardTotalEnrollments">-</strong>
               </div>
               <a href="inscripciones.html">Ver inscripciones <span class="card-arrow" aria-hidden="true">→</span></a>
             </article>
@@ -136,7 +136,7 @@
               </div>
               <div>
                 <p>Total Cursos Activos</p>
-                <strong>12</strong>
+                <strong id="dashboardActiveCourses">-</strong>
               </div>
               <a href="cursos.html">Ver cursos activos <span class="card-arrow" aria-hidden="true">→</span></a>
             </article>
@@ -186,52 +186,15 @@
                     <tr>
                       <th>Curso</th>
                       <th>Inicio</th>
-                      <th>Fin</th>
+                      <th>Horas</th>
                       <th>Inscriptos</th>
                       <th>Cupo Max.</th>
                       <th>Estado</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="activeCoursesTableBody">
                     <tr>
-                      <td>Programacion Web</td>
-                      <td>12/04/2026</td>
-                      <td>30/06/2026</td>
-                      <td>18</td>
-                      <td>30</td>
-                      <td><span class="table-badge success">Activo</span></td>
-                    </tr>
-                    <tr>
-                      <td>Base de Datos</td>
-                      <td>15/04/2026</td>
-                      <td>15/07/2026</td>
-                      <td>22</td>
-                      <td>30</td>
-                      <td><span class="table-badge success">Activo</span></td>
-                    </tr>
-                    <tr>
-                      <td>Algoritmos y Estructuras de Datos</td>
-                      <td>21/04/2026</td>
-                      <td>20/07/2026</td>
-                      <td>10</td>
-                      <td>30</td>
-                      <td><span class="table-badge success">Activo</span></td>
-                    </tr>
-                    <tr>
-                      <td>Sistemas Operativos</td>
-                      <td>05/05/2026</td>
-                      <td>05/08/2026</td>
-                      <td>0</td>
-                      <td>25</td>
-                      <td><span class="table-badge muted">Inactivo</span></td>
-                    </tr>
-                    <tr>
-                      <td>Redes de Computadoras</td>
-                      <td>10/05/2026</td>
-                      <td>10/08/2026</td>
-                      <td>5</td>
-                      <td>25</td>
-                      <td><span class="table-badge success">Activo</span></td>
+                      <td colspan="6">Cargando cursos...</td>
                     </tr>
                   </tbody>
                 </table>
@@ -256,36 +219,9 @@
                       <th>Estado</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="recentEnrollmentsTableBody">
                     <tr>
-                      <td>Juan Perez</td>
-                      <td>Programacion Web</td>
-                      <td>12/04/2026</td>
-                      <td><span class="table-badge success">Activa</span></td>
-                    </tr>
-                    <tr>
-                      <td>Maria Gomez</td>
-                      <td>Base de Datos</td>
-                      <td>11/04/2026</td>
-                      <td><span class="table-badge success">Activa</span></td>
-                    </tr>
-                    <tr>
-                      <td>Lucas Fernandez</td>
-                      <td>Algoritmos y Estructuras de Datos</td>
-                      <td>10/04/2026</td>
-                      <td><span class="table-badge success">Activa</span></td>
-                    </tr>
-                    <tr>
-                      <td>Ana Rodriguez</td>
-                      <td>Programacion Web</td>
-                      <td>09/04/2026</td>
-                      <td><span class="table-badge success">Activa</span></td>
-                    </tr>
-                    <tr>
-                      <td>Carlos Lopez</td>
-                      <td>Base de Datos</td>
-                      <td>08/04/2026</td>
-                      <td><span class="table-badge warning">Pendiente</span></td>
+                      <td colspan="4">Cargando inscripciones...</td>
                     </tr>
                   </tbody>
                 </table>
@@ -305,5 +241,6 @@
   <script src="../bootstrap-5.3.8-dist/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
+  <script src="../js/dashboard.js"></script>
 </body>
 </html>

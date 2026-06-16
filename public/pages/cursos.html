@@ -135,13 +135,12 @@
             </table>
           </div>
 
-          <nav class="admin-pagination" aria-label="Paginacion de cursos">
-            <button type="button" aria-label="Primera pagina">«</button>
-            <button type="button" aria-label="Pagina anterior">‹</button>
-            <button class="active" type="button" aria-current="page">1</button>
-            <button type="button">2</button>
-            <button type="button" aria-label="Pagina siguiente">›</button>
-            <button type="button" aria-label="Ultima pagina">»</button>
+          <nav class="admin-pagination" id="coursesPagination" aria-label="Paginacion de cursos">
+            <button id="firstCoursesPage" type="button" aria-label="Primera pagina">«</button>
+            <button id="previousCoursesPage" type="button" aria-label="Pagina anterior">‹</button>
+            <span class="admin-pagination-pages" id="coursePageNumbers"></span>
+            <button id="nextCoursesPage" type="button" aria-label="Pagina siguiente">›</button>
+            <button id="lastCoursesPage" type="button" aria-label="Ultima pagina">»</button>
           </nav>
 
           <p class="courses-results" id="coursesResults">Mostrando 0 resultados</p>

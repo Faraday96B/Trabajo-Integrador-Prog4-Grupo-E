@@ -6,6 +6,9 @@ const router = express.Router();
 // Browse: listado con filtros y paginacion.
 router.get('/', inscripcionesController.listar);
 
+// Datos auxiliares para el alta de inscripciones.
+router.get('/opciones', inscripcionesController.opciones);
+
 // Add: alta de una inscripcion.
 router.post('/', inscripcionesController.crear);
 

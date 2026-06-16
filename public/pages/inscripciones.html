@@ -33,13 +33,13 @@
           </span>
           Estudiantes
         </a>
-        <a class="admin-nav-link" href="cursos.html" aria-current="page">
+        <a class="admin-nav-link" href="cursos.html">
           <span class="admin-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="m12 3 10 5-10 5L2 8l10-5Zm-6 8.5 6 3 6-3V16c0 1.7-2.7 4-6 4s-6-2.3-6-4v-4.5Z"/></svg>
           </span>
           Cursos
         </a>
-        <a class="admin-nav-link active" href="inscripciones.html">
+        <a class="admin-nav-link active" href="inscripciones.html" aria-current="page">
           <span class="admin-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M7 2h10v3h3v17H4V5h3V2Zm2 3h6V4H9v1Zm-2 5v2h10v-2H7Zm0 4v2h10v-2H7Z"/></svg>
           </span>
@@ -84,7 +84,19 @@
           <div class="row g-4 align-items-end">
             <div class="col-12 col-lg-4">
               <label class="form-label" for="enrollmentSearchFilter">Buscar estudiante</label>
-              <input class="form-control admin-control" id="enrollmentSearchFilter" type="search" placeholder="Apellido, nombre o documento">
+              <div class="admin-autocomplete">
+                <input
+                  class="form-control admin-control"
+                  id="enrollmentSearchFilter"
+                  type="search"
+                  placeholder="Apellido, nombre o documento"
+                  autocomplete="off"
+                  aria-autocomplete="list"
+                  aria-controls="studentSearchSuggestions"
+                  aria-expanded="false"
+                >
+                <div class="admin-autocomplete-list" id="studentSearchSuggestions" role="listbox" hidden></div>
+              </div>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
               <label class="form-label" for="enrollmentCourseFilter">Curso</label>
@@ -147,16 +159,80 @@
             </table>
           </div>
 
-          <nav class="admin-pagination" aria-label="Paginación de inscripciones">
-            <button type="button" aria-label="Primera página">«</button>
-            <button type="button" aria-label="Página anterior">‹</button>
-            <button class="active" type="button" aria-current="page">1</button>
-            <button type="button" aria-label="Página siguiente">›</button>
-            <button type="button" aria-label="Última página">»</button>
+          <nav class="admin-pagination" id="enrollmentsPagination" aria-label="Paginación de inscripciones">
+            <button id="firstEnrollmentsPage" type="button" aria-label="Primera página">«</button>
+            <button id="previousEnrollmentsPage" type="button" aria-label="Página anterior">‹</button>
+            <span class="admin-pagination-pages" id="enrollmentPageNumbers"></span>
+            <button id="nextEnrollmentsPage" type="button" aria-label="Página siguiente">›</button>
+            <button id="lastEnrollmentsPage" type="button" aria-label="Última página">»</button>
           </nav>
 
           <p class="courses-results" id="enrollmentsResults">Mostrando 0 resultados</p>
         </section>
+
+        <dialog class="enrollment-dialog" id="enrollmentDetailsDialog" aria-labelledby="enrollmentDetailsTitle">
+          <div class="enrollment-dialog-header">
+            <div>
+              <span class="enrollment-dialog-kicker">Inscripci&oacute;n</span>
+              <h2 id="enrollmentDetailsTitle">Detalle de inscripci&oacute;n</h2>
+            </div>
+            <button class="enrollment-dialog-close" type="button" data-close-enrollment-modal aria-label="Cerrar detalle">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.4 5 12.6 12.6-1.4 1.4L5 6.4 6.4 5Zm12.6 1.4L6.4 19 5 17.6 17.6 5 19 6.4Z"/></svg>
+            </button>
+          </div>
+          <div class="enrollment-dialog-body">
+            <dl class="enrollment-detail-grid">
+              <div>
+                <dt>ID de inscripci&oacute;n</dt>
+                <dd id="modalEnrollmentId">-</dd>
+              </div>
+              <div>
+                <dt>Estado</dt>
+                <dd><span class="course-state-badge" id="modalEnrollmentStatus">-</span></dd>
+              </div>
+              <div>
+                <dt>Estudiante</dt>
+                <dd id="modalEnrollmentStudent">-</dd>
+              </div>
+              <div>
+                <dt>Documento</dt>
+                <dd id="modalEnrollmentDocument">-</dd>
+              </div>
+              <div>
+                <dt>Curso</dt>
+                <dd id="modalEnrollmentCourse">-</dd>
+              </div>
+              <div>
+                <dt>Fecha</dt>
+                <dd id="modalEnrollmentDate">-</dd>
+              </div>
+            </dl>
+          </div>
+          <div class="enrollment-dialog-footer">
+            <button class="light-admin-button" type="button" data-close-enrollment-modal>Cerrar</button>
+          </div>
+        </dialog>
+
+        <dialog class="enrollment-dialog enrollment-confirm-dialog" id="cancelEnrollmentDialog" aria-labelledby="cancelEnrollmentTitle">
+          <div class="enrollment-dialog-header">
+            <div>
+              <span class="enrollment-dialog-kicker">Confirmar acci&oacute;n</span>
+              <h2 id="cancelEnrollmentTitle">Cancelar inscripci&oacute;n</h2>
+            </div>
+            <button class="enrollment-dialog-close" type="button" data-close-cancel-modal aria-label="Cerrar confirmacion">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.4 5 12.6 12.6-1.4 1.4L5 6.4 6.4 5Zm12.6 1.4L6.4 19 5 17.6 17.6 5 19 6.4Z"/></svg>
+            </button>
+          </div>
+          <div class="enrollment-dialog-body">
+            <p class="enrollment-confirm-text" id="cancelEnrollmentMessage">
+              Esta inscripci&oacute;n pasar&aacute; a estado cancelada.
+            </p>
+          </div>
+          <div class="enrollment-dialog-footer">
+            <button class="light-admin-button" type="button" data-close-cancel-modal>No cancelar</button>
+            <button class="danger-admin-button" id="confirmCancelEnrollment" type="button">Cancelar inscripci&oacute;n</button>
+          </div>
+        </dialog>
 
       </main>
     </div>

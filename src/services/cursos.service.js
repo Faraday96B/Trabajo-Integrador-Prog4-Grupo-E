@@ -1,7 +1,6 @@
 // TODO: Reglas de negocio de cursos.
 // TODO: ValidarCurso - revisar campos obligatorios, formatos y valores numericos.
 // TODO: ValidarEstadoCurso - controlar si el curso puede editarse, activarse o darse de baja.
-// TODO: ValidarInscripcion - verificar cupo, duplicados y estado habilitado.
 // TODO: GenerarDiploma - preparar los datos del certificado PDF.
 
 const cursoModel = require('../models/curso.model');
@@ -130,59 +129,6 @@ async function validarEstadoCurso(data, { permitirEliminado = false } = {}) {
     },
   };
 }
-async function validarInscripcion(data) {
-  if (!data) {
-    const error = new Error('Los datos de la inscripción son obligatorios.');
-    error.status = 400;
-    throw error;
-  }
-
-  if (!data.id_curso) {
-    const error = new Error('El curso es obligatorio.');
-    error.status = 400;
-    throw error;
-  }
-
-  const curso = await cursoModel.obtenerPorId(data.id_curso);
-
-  if (!curso) {
-    const error = new Error('El curso no existe.');
-    error.status = 404;
-    throw error;
-  }
-
-  if (curso.id_curso_estado === 4 || !curso.curso_estado_es_activo) {
-    const error = new Error('El curso no está habilitado para inscripciones.');
-    error.status = 400;
-    throw error;
-  }
-
-  const cupo = await cursoModel.obtenerCupo(data.id_curso);
-
-  if (!cupo) {
-    const error = new Error('No se pudo obtener el cupo del curso.');
-    error.status = 404;
-    throw error;
-  }
-
-  if (Number(cupo.inscriptos_confirmados) >= Number(cupo.inscriptos_max)) {
-    const error = new Error('No hay cupo disponible para este curso.');
-    error.status = 400;
-    throw error;
-  }
-
-  return {
-    ok: true,
-    message: 'Inscripción válida.',
-    data: {
-      valido: true,
-      curso,
-      cupo,
-      inscripcion: data,
-    },
-  };
-}
-
 async function listarCursos(filtros = {}) {
   const cursos = await cursoModel.listar(filtros);
 
@@ -305,7 +251,8 @@ async function generarDiploma(idCurso) {
     data: {
       curso,
       certificado,
-      archivo: pdf.data.archivo,
+      buffer: pdf.data.buffer,
+      nombreArchivo: pdf.data.nombreArchivo,
     },
   };
 }
@@ -313,7 +260,6 @@ async function generarDiploma(idCurso) {
 module.exports = {
   validarCurso,
   validarEstadoCurso,
-  validarInscripcion,
   listarCursos,
   obtenerCursoPorId,
   crearCurso,

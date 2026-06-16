@@ -1195,6 +1195,22 @@ body {
   color: #0f172a;
 }
 
+.danger-admin-button {
+  background: #e11d48;
+  border: 1px solid #e11d48;
+  border-radius: 7px;
+  color: #fff;
+  font-size: .98rem;
+  font-weight: 750;
+  min-height: 48px;
+  padding: 12px 18px;
+}
+
+.danger-admin-button:hover {
+  background: #be123c;
+  border-color: #be123c;
+}
+
 .courses-filter-panel,
 .courses-table-card {
   background: #fff;
@@ -1230,6 +1246,96 @@ body {
 .search-button,
 .clear-button {
   width: 100%;
+}
+
+.admin-autocomplete {
+  position: relative;
+}
+
+.admin-autocomplete-list {
+  background: #fff;
+  border: 1px solid #d5deeb;
+  border-radius: 8px;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, .13);
+  left: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 6px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+}
+
+.admin-autocomplete-option {
+  background: #fff;
+  border: 0;
+  border-radius: 6px;
+  color: #0f172a;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  text-align: left;
+  width: 100%;
+}
+
+.admin-autocomplete-option:hover,
+.admin-autocomplete-option:focus {
+  background: #eff5ff;
+  outline: none;
+}
+
+.admin-autocomplete-option strong {
+  font-size: .95rem;
+  font-weight: 750;
+}
+
+.admin-autocomplete-option small {
+  color: #52617a;
+  font-size: .85rem;
+}
+
+.admin-toast-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(420px, calc(100vw - 32px));
+  position: fixed;
+  right: 24px;
+  top: 24px;
+  z-index: 1200;
+}
+
+.admin-toast {
+  background: #fff;
+  border: 1px solid #d5deeb;
+  border-left: 5px solid var(--admin-blue);
+  border-radius: 8px;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, .16);
+  color: #0f172a;
+  font-size: .96rem;
+  font-weight: 700;
+  line-height: 1.35;
+  padding: 14px 16px;
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.admin-toast.success {
+  border-left-color: #009758;
+}
+
+.admin-toast.error {
+  border-left-color: #e11d48;
+}
+
+.admin-toast.info {
+  border-left-color: var(--admin-blue);
+}
+
+.admin-toast.is-hiding {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 .courses-table-card {
@@ -1332,6 +1438,11 @@ body {
   padding: 36px 20px;
 }
 
+.admin-pagination-pages {
+  display: inline-flex;
+  gap: 8px;
+}
+
 .admin-pagination button {
   align-items: center;
   background: #fff;
@@ -1353,12 +1464,141 @@ body {
   color: #fff;
 }
 
+.admin-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
 .courses-results {
   border-top: 1px solid #dfe6f1;
   color: #52617a;
   font-size: .98rem;
   margin: 0;
   padding: 22px 28px;
+}
+
+.enrollment-dialog {
+  background: #fff;
+  border: 1px solid #d5deeb;
+  border-radius: 8px;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, .28);
+  color: #0f172a;
+  max-width: min(620px, calc(100vw - 32px));
+  padding: 0;
+  width: 100%;
+}
+
+.enrollment-dialog::backdrop {
+  background: rgba(15, 23, 42, .52);
+}
+
+.enrollment-dialog-header {
+  align-items: flex-start;
+  border-bottom: 1px solid #dfe6f1;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px 26px;
+}
+
+.enrollment-dialog-kicker {
+  color: var(--admin-blue);
+  display: block;
+  font-size: .85rem;
+  font-weight: 750;
+  letter-spacing: .08em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.enrollment-dialog h2 {
+  color: #061332;
+  font-size: 1.35rem;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.enrollment-dialog-close {
+  align-items: center;
+  background: #f7f9fc;
+  border: 1px solid #d9e2ee;
+  border-radius: 7px;
+  color: #334155;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 38px;
+  justify-content: center;
+  padding: 0;
+  width: 38px;
+}
+
+.enrollment-dialog-close:hover {
+  background: #eff5ff;
+  color: var(--admin-blue);
+}
+
+.enrollment-dialog-close svg {
+  height: 1rem;
+  width: 1rem;
+}
+
+.enrollment-dialog-body {
+  padding: 24px 26px 8px;
+}
+
+.enrollment-detail-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.enrollment-detail-grid div {
+  background: #f8fafc;
+  border: 1px solid #e3eaf5;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.enrollment-detail-grid dt {
+  color: #52617a;
+  font-size: .82rem;
+  font-weight: 750;
+  margin-bottom: 7px;
+  text-transform: uppercase;
+}
+
+.enrollment-detail-grid dd {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.enrollment-dialog-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 18px 26px 24px;
+}
+
+.enrollment-dialog-footer .light-admin-button {
+  min-width: 116px;
+}
+
+.enrollment-confirm-dialog {
+  max-width: min(520px, calc(100vw - 32px));
+}
+
+.enrollment-confirm-text {
+  color: #334155;
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0;
 }
 
 @media (max-width: 992px) {
@@ -1384,6 +1624,23 @@ body {
   .admin-pagination {
     flex-wrap: wrap;
     padding: 24px 14px;
+  }
+
+  .admin-toast-container {
+    left: 14px;
+    right: 14px;
+    top: 14px;
+  }
+
+  .enrollment-dialog-header,
+  .enrollment-dialog-body,
+  .enrollment-dialog-footer {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .enrollment-detail-grid {
+    grid-template-columns: 1fr;
   }
 }
 

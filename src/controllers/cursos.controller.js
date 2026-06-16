@@ -56,7 +56,13 @@ async function eliminar(req, res, next) {
 async function diploma(req, res, next) {
   try {
     const result = await cursosService.generarDiploma(req.params.id);
-    return res.status(200).json(result);
+    const pdfBuffer = result.data.buffer;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${result.data.nombreArchivo}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+
+    return res.status(200).send(pdfBuffer);
   } catch (error) {
     return next(error);
   }
