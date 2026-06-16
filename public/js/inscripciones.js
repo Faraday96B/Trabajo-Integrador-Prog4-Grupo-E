@@ -111,7 +111,7 @@ async function requestPdfBlob(url) {
   if (response.status === 401) {
     window.clearAuthSession?.();
     window.redirectToLogin?.();
-    throw new Error("Sesion expirada.");
+    throw new Error("Sesión expirada.");
   }
 
   if (!response.ok) {
@@ -251,9 +251,9 @@ function createActionsCell(enrollment) {
   const actions = document.createElement("div");
   actions.className = "course-actions";
 
-  const viewButton = createIconButton("view", "Ver inscripcion", "M12 5c5 0 9 5.5 9 7s-4 7-9 7-9-5.5-9-7 4-7 9-7Zm0 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z", enrollment.id);
+  const viewButton = createIconButton("view", "Ver inscripción", "M12 5c5 0 9 5.5 9 7s-4 7-9 7-9-5.5-9-7 4-7 9-7Zm0 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z", enrollment.id);
   const diplomaButton = createIconButton("diploma", "Diploma", "M6 2h9l5 5v15H6V2Zm8 1.5V8h4.5L14 3.5ZM8 11v2h10v-2H8Zm0 4v2h7v-2H8ZM4 6v18h14v-2H6V6H4Z", enrollment.id);
-  const cancelButton = createIconButton("delete", "Cancelar inscripcion", "M7 21a2 2 0 0 1-2-2V7h14v12a2 2 0 0 1-2 2H7ZM9 4h6l1 2h5v2H3V6h5l1-2Zm0 7v6h2v-6H9Zm4 0v6h2v-6h-2Z", enrollment.id);
+  const cancelButton = createIconButton("delete", "Cancelar inscripción", "M7 21a2 2 0 0 1-2-2V7h14v12a2 2 0 0 1-2 2H7ZM9 4h6l1 2h5v2H3V6h5l1-2Zm0 7v6h2v-6H9Zm4 0v6h2v-6h-2Z", enrollment.id);
 
   if (Number(enrollment.estado.id) === 2) {
     diplomaButton.disabled = true;
@@ -329,7 +329,7 @@ function createPageNumberButton(pageNumber) {
   button.type = "button";
   button.textContent = pageNumber;
   button.dataset.page = pageNumber;
-  button.setAttribute("aria-label", `Pagina ${pageNumber}`);
+  button.setAttribute("aria-label", `Página ${pageNumber}`);
 
   if (isActive) {
     button.className = "active";
@@ -522,7 +522,7 @@ async function loadOptions() {
   fillSelect(
     courseInput,
     cursos,
-    cursos.length ? "Seleccione un curso" : "No hay cursos con inscripcion abierta",
+    cursos.length ? "Seleccione un curso" : "No hay cursos con inscripción abierta",
     (course) => course.id,
     (course) => `${course.nombre} (${course.inscriptosConfirmados}/${course.inscriptosMax})`
   );
@@ -580,7 +580,7 @@ async function createEnrollment() {
     await loadEnrollments(1);
   } catch (error) {
     console.error(error);
-    showToast(`No se pudo crear la inscripcion: ${error.message}`, "error");
+    showToast(`No se pudo crear la inscripción: ${error.message}`, "error");
   }
 }
 
@@ -632,7 +632,7 @@ function showEnrollment(id) {
   const enrollment = findEnrollmentById(id);
 
   if (!enrollment) {
-    console.warn("No se encontro la inscripcion seleccionada.");
+    console.warn("No se encontró la inscripción seleccionada.");
     return;
   }
 
@@ -649,12 +649,12 @@ function closeCancelEnrollmentModal() {
 
 function openCancelEnrollmentModal(id) {
   const enrollment = findEnrollmentById(id);
-  const studentName = enrollment ? getEnrollmentStudentName(enrollment) : "esta inscripcion";
+  const studentName = enrollment ? getEnrollmentStudentName(enrollment) : "esta inscripción";
 
   pendingCancelEnrollmentId = id;
 
   if (cancelEnrollmentMessage) {
-    cancelEnrollmentMessage.textContent = `Vas a cancelar la inscripcion de ${studentName}. Esta accion cambia el estado a cancelada.`;
+    cancelEnrollmentMessage.textContent = `Vas a cancelar la inscripción de ${studentName}. Esta acción cambia el estado a cancelada.`;
   }
 
   if (cancelEnrollmentDialog?.showModal) {
@@ -681,7 +681,7 @@ async function confirmCancelEnrollment() {
     await loadEnrollments();
   } catch (error) {
     console.error(error);
-    showToast(`No se pudo cancelar la inscripcion: ${error.message}`, "error");
+    showToast(`No se pudo cancelar la inscripción: ${error.message}`, "error");
   }
 }
 

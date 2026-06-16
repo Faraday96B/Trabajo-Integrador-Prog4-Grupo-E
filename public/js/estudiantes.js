@@ -193,7 +193,7 @@ function createActionsCell(student) {
 
   if (!student.activo) {
     deleteButton.disabled = true;
-    deleteButton.title = "El estudiante ya esta inactivo";
+    deleteButton.title = "El estudiante ya está inactivo";
   }
 
   actions.append(viewButton, editButton, deleteButton);
@@ -264,7 +264,7 @@ function createPageNumberButton(pageNumber) {
   button.type = "button";
   button.textContent = pageNumber;
   button.dataset.page = pageNumber;
-  button.setAttribute("aria-label", `Pagina ${pageNumber}`);
+  button.setAttribute("aria-label", `Página ${pageNumber}`);
 
   if (isActive) {
     button.className = "active";
@@ -518,7 +518,7 @@ function showStudent(id) {
   const student = findStudentById(id);
 
   if (!student) {
-    showToast("No se encontro el estudiante seleccionado.", "error");
+    showToast("No se encontró el estudiante seleccionado.", "error");
     return;
   }
 
@@ -556,7 +556,7 @@ function openDeleteStudentModal(id) {
   pendingDeleteStudentId = id;
 
   if (deleteStudentMessage) {
-    deleteStudentMessage.textContent = `Vas a dar de baja a ${studentName}. El estudiante quedara inactivo para nuevas inscripciones.`;
+    deleteStudentMessage.textContent = `Vas a dar de baja a ${studentName}. El estudiante quedará inactivo para nuevas inscripciones.`;
   }
 
   if (deleteStudentDialog?.showModal) {

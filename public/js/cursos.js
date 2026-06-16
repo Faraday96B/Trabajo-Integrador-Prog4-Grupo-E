@@ -66,7 +66,7 @@ async function requestApi(url, options = {}) {
   }
 
   if (!result?.ok) {
-    throw new Error(result?.message || "La API respondio con error.");
+    throw new Error(result?.message || "La API respondió con error.");
   }
 
   return result;
@@ -100,7 +100,7 @@ async function requestPdfBlob(url) {
   if (response.status === 401) {
     window.clearAuthSession?.();
     window.redirectToLogin?.();
-    throw new Error("Sesion expirada.");
+    throw new Error("Sesión expirada.");
   }
 
   if (!response.ok) {
@@ -343,7 +343,7 @@ function createCoursePageButton(pageNumber) {
   button.type = "button";
   button.textContent = pageNumber;
   button.dataset.page = pageNumber;
-  button.setAttribute("aria-label", `Pagina ${pageNumber}`);
+  button.setAttribute("aria-label", `Página ${pageNumber}`);
 
   if (isActive) {
     button.className = "active";
@@ -446,8 +446,8 @@ async function showCourse(id) {
 
 function setCourseDetailLoading() {
   setText(courseDetailTitle, "Detalle del curso");
-  setText(courseDetailSubtitle, "Cargando informacion general del curso...");
-  setText(courseDetailDescription, "Cargando informacion del curso...");
+  setText(courseDetailSubtitle, "Cargando información general del curso...");
+  setText(courseDetailDescription, "Cargando información del curso...");
   setText(courseDetailStatus, "Cargando...");
   setText(courseDetailStartDate, "-");
   setText(courseDetailHours, "-");
@@ -472,7 +472,7 @@ function renderCourseDetail(course) {
   document.title = `${normalizedCourse.nombre} | FCAD Cursos`;
   setText(courseDetailTitle, normalizedCourse.nombre);
   setText(courseDetailSubtitle, `Curso #${normalizedCourse.id}`);
-  setText(courseDetailDescription, normalizedCourse.descripcion || "Sin descripcion cargada.");
+  setText(courseDetailDescription, normalizedCourse.descripcion || "Sin descripción cargada.");
   setText(courseDetailStatus, normalizedCourse.estado.descripcion);
   setText(courseDetailStartDate, formatDate(normalizedCourse.fechaInicio));
   setText(courseDetailHours, normalizedCourse.cantidadHoras);
@@ -508,7 +508,7 @@ async function setupCourseDetail() {
   const courseId = params.get("id");
 
   if (!courseId) {
-    alert("No se indico el curso a visualizar.");
+    alert("No se indicó el curso a visualizar.");
     window.location.href = "cursos.html";
     return;
   }
@@ -526,7 +526,7 @@ async function setupCourseDetail() {
 }
 
 async function deleteCourse(id) {
-  const confirmed = confirm("Seguro que queres eliminar este curso?");
+  const confirmed = confirm("¿Seguro que querés eliminar este curso?");
 
   if (!confirmed) {
     return;
@@ -606,7 +606,7 @@ async function setupCourseForm() {
     }
   } catch (error) {
     console.error(error);
-    alert(`No se encontro el curso: ${error.message}`);
+    alert(`No se encontró el curso: ${error.message}`);
     window.location.href = "cursos.html";
   }
 }

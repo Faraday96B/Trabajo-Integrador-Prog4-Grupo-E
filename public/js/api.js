@@ -36,7 +36,7 @@ async function apiRequest(url, options = {}) {
   if (response.status === 401) {
     clearAuthSession();
     redirectToLogin();
-    throw new Error(result?.message || 'Sesion expirada.');
+    throw new Error(result?.message || 'Sesión expirada.');
   }
 
   if (!response.ok || !result?.ok) {

@@ -70,7 +70,7 @@ async function handleLogin(event) {
   const contrasenia = form.contrasenia.value;
 
   if (!nombreUsuario || !contrasenia) {
-    showLoginMessage('Ingrese usuario y contrasenia.');
+    showLoginMessage('Ingrese usuario y contraseña.');
     return;
   }
 
@@ -98,7 +98,7 @@ async function handleLogin(event) {
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(result.data.usuario));
     window.location.href = '/pages/dashboard.html';
   } catch (error) {
-    showLoginMessage(error.message || 'No se pudo iniciar sesion.');
+    showLoginMessage(error.message || 'No se pudo iniciar sesión.');
   } finally {
     setLoginLoading(false);
   }
