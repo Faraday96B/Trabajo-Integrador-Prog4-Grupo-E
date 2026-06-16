@@ -1,111 +1,156 @@
-const coursesGrid = document.querySelector("#coursesGrid");
+const coursesTotal = document.querySelector('#coursesTotal');
+const activeCoursesTotal = document.querySelector('#activeCoursesTotal');
+const studentsTotal = document.querySelector('#studentsTotal');
+const enrollmentsTotal = document.querySelector('#enrollmentsTotal');
+const notificationsTotal = document.querySelector('#notificationsTotal');
+const activeCoursesTableBody = document.querySelector('#activeCoursesTableBody');
+const recentEnrollmentsTableBody = document.querySelector('#recentEnrollmentsTableBody');
 
-const fallbackCourses = [
-  {
-    nombre: "Programacion Web con React",
-    fechaInicio: "2026-04-20T03:00:00.000Z",
-    cantidadHoras: 60,
-    inscriptosMax: 30,
-    estado: "BORRADOR"
-  },
-  {
-    nombre: "Introduccion a la Inteligencia Artificial",
-    fechaInicio: "2026-05-05T03:00:00.000Z",
-    cantidadHoras: 50,
-    inscriptosMax: 25,
-    estado: "BORRADOR"
-  },
-  {
-    nombre: "Seguridad Informatica y Ethical Hacking",
-    fechaInicio: "2026-05-10T03:00:00.000Z",
-    cantidadHoras: 70,
-    inscriptosMax: 20,
-    estado: "BORRADOR"
-  },
-  {
-    nombre: "Bases de Datos SQL y NoSQL",
-    fechaInicio: "2026-04-25T03:00:00.000Z",
-    cantidadHoras: 55,
-    inscriptosMax: 35,
-    estado: "BORRADOR"
-  },
-  {
-    nombre: "Desarrollo Backend con Node.js y NestJS",
-    fechaInicio: "2026-05-15T03:00:00.000Z",
-    cantidadHoras: 65,
-    inscriptosMax: 30,
-    estado: "BORRADOR"
-  }
-];
-
-function fixText(value) {
-  if (typeof value !== "string") {
-    return value;
-  }
-
-  try {
-    return decodeURIComponent(escape(value));
-  } catch {
-    return value;
+function setText(element, text) {
+  if (element) {
+    element.textContent = text;
   }
 }
 
 function formatDate(value) {
+  if (!value) {
+    return '-';
+  }
+
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "-";
+    return '-';
   }
 
-  return date.toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
+  return date.toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'UTC',
   });
 }
 
-function createCourseCard(course) {
-  const article = document.createElement("article");
-  article.className = "course-card";
-
-  const title = document.createElement("h3");
-  title.textContent = fixText(course.nombre);
-
-  const date = document.createElement("p");
-  date.innerHTML = `<strong>Fecha de inicio:</strong> ${formatDate(course.fechaInicio)}`;
-
-  const hours = document.createElement("p");
-  hours.innerHTML = `<strong>Cantidad de horas:</strong> ${course.cantidadHoras ?? "-"}`;
-
-  const maxStudents = document.createElement("p");
-  maxStudents.innerHTML = `<strong>Inscriptos maximos:</strong> ${course.inscriptosMax ?? "-"}`;
-
-  const status = document.createElement("p");
-  status.innerHTML = `<strong>Estado:</strong> <span class="status-badge">${fixText(course.estado ?? "-")}</span>`;
-
-  article.append(title, date, hours, maxStudents, status);
-  return article;
+function normalizeCourse(course) {
+  return {
+    id: course.id,
+    nombre: course.nombre ?? '-',
+    fechaInicio: course.fechaInicio,
+    cantidadHoras: course.cantidadHoras ?? 0,
+    inscriptosMax: course.inscriptosMax ?? 0,
+    inscriptosConfirmados: course.inscriptosConfirmados ?? 0,
+    estado: {
+      id: Number(course.estado?.id),
+      descripcion: course.estado?.descripcion ?? '-',
+      activo: Boolean(course.estado?.activo),
+    },
+  };
 }
 
-function renderCourses(courses) {
-  coursesGrid.replaceChildren(...courses.map(createCourseCard));
+function isCourseActive(course) {
+  const normalizedCourse = normalizeCourse(course);
+  return normalizedCourse.estado.activo && normalizedCourse.estado.id !== 4;
 }
 
-async function loadCourses() {
+function createCell(text) {
+  const cell = document.createElement('td');
+  cell.textContent = text;
+  return cell;
+}
+
+function createStatusCell(course) {
+  const cell = document.createElement('td');
+  const badge = document.createElement('span');
+  const estadoId = Number(course.estado.id);
+
+  badge.className = estadoId === 4 ? 'table-badge muted' : 'table-badge success';
+  badge.textContent = course.estado.descripcion;
+  cell.appendChild(badge);
+  return cell;
+}
+
+function renderActiveCourses(courses) {
+  if (!activeCoursesTableBody) {
+    return;
+  }
+
+  const activeCourses = courses.filter(isCourseActive).slice(0, 5).map(normalizeCourse);
+
+  if (activeCourses.length === 0) {
+    const row = document.createElement('tr');
+    const cell = createCell('No hay cursos activos para mostrar.');
+    cell.colSpan = 6;
+    row.appendChild(cell);
+    activeCoursesTableBody.replaceChildren(row);
+    return;
+  }
+
+  const rows = activeCourses.map((course) => {
+    const row = document.createElement('tr');
+
+    row.append(
+      createCell(course.nombre),
+      createCell(formatDate(course.fechaInicio)),
+      createCell(course.cantidadHoras),
+      createCell(course.inscriptosConfirmados),
+      createCell(course.inscriptosMax),
+      createStatusCell(course)
+    );
+
+    return row;
+  });
+
+  activeCoursesTableBody.replaceChildren(...rows);
+}
+
+function renderPendingEnrollments() {
+  if (!recentEnrollmentsTableBody) {
+    return;
+  }
+
+  const row = document.createElement('tr');
+  const cell = createCell('Modulo de inscripciones pendiente de implementacion.');
+  cell.colSpan = 4;
+  row.appendChild(cell);
+  recentEnrollmentsTableBody.replaceChildren(row);
+}
+
+function renderCourseError(error) {
+  setText(coursesTotal, 'Error');
+  setText(activeCoursesTotal, 'Error');
+
+  if (!activeCoursesTableBody) {
+    return;
+  }
+
+  const row = document.createElement('tr');
+  const cell = createCell(`No se pudieron cargar los cursos: ${error.message}`);
+  cell.colSpan = 6;
+  row.appendChild(cell);
+  activeCoursesTableBody.replaceChildren(row);
+}
+
+async function loadDashboardCourses() {
   try {
-    const response = await fetch("../js/cursos.json");
+    const result = await window.apiRequest('/api/cursos');
+    const courses = Array.isArray(result.data) ? result.data : [];
+    const activeCourses = courses.filter(isCourseActive);
 
-    if (!response.ok) {
-      throw new Error("No se pudo cargar cursos.json");
-    }
-
-    const courses = await response.json();
-    renderCourses(courses);
-  } catch {
-    renderCourses(fallbackCourses);
+    setText(coursesTotal, courses.length);
+    setText(activeCoursesTotal, activeCourses.length);
+    renderActiveCourses(courses);
+  } catch (error) {
+    console.error(error);
+    renderCourseError(error);
   }
 }
 
-if (coursesGrid) {
-  loadCourses();
+function renderPendingMetrics() {
+  setText(studentsTotal, 'Pendiente');
+  setText(enrollmentsTotal, 'Pendiente');
+  setText(notificationsTotal, '0');
+  renderPendingEnrollments();
 }
+
+renderPendingMetrics();
+loadDashboardCourses();
