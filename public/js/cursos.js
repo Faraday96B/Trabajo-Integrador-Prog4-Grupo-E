@@ -19,6 +19,17 @@ const courseCapacityInput = document.querySelector("#courseCapacity");
 const courseStatusInput = document.querySelector("#courseStatus");
 const courseFormHeading = document.querySelector(".course-form-heading h1");
 const courseFormIntro = document.querySelector(".course-form-heading p");
+const courseDetailTitle = document.querySelector("#courseDetailTitle");
+const courseDetailSubtitle = document.querySelector("#courseDetailSubtitle");
+const courseDetailStatus = document.querySelector("#courseDetailStatus");
+const courseDetailDescription = document.querySelector("#courseDetailDescription");
+const courseDetailStartDate = document.querySelector("#courseDetailStartDate");
+const courseDetailHours = document.querySelector("#courseDetailHours");
+const courseDetailCapacity = document.querySelector("#courseDetailCapacity");
+const courseDetailEnrolled = document.querySelector("#courseDetailEnrolled");
+const courseDetailAvailable = document.querySelector("#courseDetailAvailable");
+const courseDetailEdit = document.querySelector("#courseDetailEdit");
+const courseDetailDiploma = document.querySelector("#courseDetailDiploma");
 
 let allCourses = [];
 let editingCourseId = null;
@@ -129,6 +140,12 @@ function openPdfBlob(blob, fileName) {
 function setLoading(message = "Cargando cursos...") {
   if (resultsText) {
     resultsText.textContent = message;
+  }
+}
+
+function setText(element, text) {
+  if (element) {
+    element.textContent = text;
   }
 }
 
@@ -424,12 +441,87 @@ async function findCourseById(id) {
 }
 
 async function showCourse(id) {
+  window.location.href = `curso-detalle.html?id=${encodeURIComponent(id)}`;
+}
+
+function setCourseDetailLoading() {
+  setText(courseDetailTitle, "Detalle del curso");
+  setText(courseDetailSubtitle, "Cargando informacion general del curso...");
+  setText(courseDetailDescription, "Cargando informacion del curso...");
+  setText(courseDetailStatus, "Cargando...");
+  setText(courseDetailStartDate, "-");
+  setText(courseDetailHours, "-");
+  setText(courseDetailCapacity, "-");
+  setText(courseDetailEnrolled, "-");
+  setText(courseDetailAvailable, "-");
+}
+
+function renderCourseDetail(course) {
+  const normalizedCourse = normalizeCourse(course);
+  const availableSeats = Math.max(
+    0,
+    Number(normalizedCourse.inscriptosMax) - Number(normalizedCourse.inscriptosConfirmados)
+  );
+  const statusId = Number(normalizedCourse.estado.id);
+  const statusClass = statusId === 4
+    ? "inactive"
+    : statusId === 1
+      ? "draft"
+      : "active";
+
+  document.title = `${normalizedCourse.nombre} | FCAD Cursos`;
+  setText(courseDetailTitle, normalizedCourse.nombre);
+  setText(courseDetailSubtitle, `Curso #${normalizedCourse.id}`);
+  setText(courseDetailDescription, normalizedCourse.descripcion || "Sin descripcion cargada.");
+  setText(courseDetailStatus, normalizedCourse.estado.descripcion);
+  setText(courseDetailStartDate, formatDate(normalizedCourse.fechaInicio));
+  setText(courseDetailHours, normalizedCourse.cantidadHoras);
+  setText(courseDetailCapacity, normalizedCourse.inscriptosMax);
+  setText(courseDetailEnrolled, normalizedCourse.inscriptosConfirmados);
+  setText(courseDetailAvailable, availableSeats);
+
+  if (courseDetailStatus) {
+    courseDetailStatus.className = `course-state-badge ${statusClass}`;
+  }
+
+  if (courseDetailEdit) {
+    courseDetailEdit.href = `curso-form.html?id=${encodeURIComponent(normalizedCourse.id)}`;
+
+    if (statusId === 4) {
+      courseDetailEdit.classList.add("disabled");
+      courseDetailEdit.setAttribute("aria-disabled", "true");
+      courseDetailEdit.removeAttribute("href");
+    }
+  }
+
+  if (courseDetailDiploma) {
+    courseDetailDiploma.dataset.id = normalizedCourse.id;
+  }
+}
+
+async function setupCourseDetail() {
+  if (!courseDetailTitle) {
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const courseId = params.get("id");
+
+  if (!courseId) {
+    alert("No se indico el curso a visualizar.");
+    window.location.href = "cursos.html";
+    return;
+  }
+
+  setCourseDetailLoading();
+
   try {
-    const course = normalizeCourse(await findCourseById(id));
-    alert(`${course.nombre}\nDescripcion: ${course.descripcion || "-"}\nInicio: ${formatDate(course.fechaInicio)}\nHoras: ${course.cantidadHoras}\nCupo: ${course.inscriptosMax}\nInscriptos: ${course.inscriptosConfirmados}\nEstado: ${course.estado.descripcion}`);
+    const course = await findCourseById(courseId);
+    renderCourseDetail(course);
   } catch (error) {
     console.error(error);
     alert(`No se pudo cargar el curso: ${error.message}`);
+    window.location.href = "cursos.html";
   }
 }
 
@@ -604,6 +696,11 @@ nameFilter?.addEventListener("keydown", (event) => {
 });
 coursesTableBody?.addEventListener("click", handleTableClick);
 courseForm?.addEventListener("submit", saveCourse);
+courseDetailDiploma?.addEventListener("click", () => {
+  if (courseDetailDiploma.dataset.id) {
+    showDiploma(courseDetailDiploma.dataset.id);
+  }
+});
 
 if (coursesTableBody) {
   loadCourses();
@@ -612,3 +709,5 @@ if (coursesTableBody) {
 if (courseForm) {
   setupCourseForm();
 }
+
+setupCourseDetail();
