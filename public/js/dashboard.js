@@ -70,7 +70,7 @@ function normalizeCourse(course) {
 
 function isCourseActive(course) {
   const normalizedCourse = normalizeCourse(course);
-  return normalizedCourse.estado.activo && normalizedCourse.estado.id !== 4;
+  return normalizedCourse.estado.id === 2;
 }
 
 function createCourseStatusCell(course) {

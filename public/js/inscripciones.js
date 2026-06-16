@@ -186,6 +186,10 @@ function normalizeEnrollment(enrollment) {
     curso: {
       id: enrollment.curso?.id,
       nombre: enrollment.curso?.nombre ?? "-",
+      estado: {
+        id: Number(enrollment.curso?.estado?.id),
+        descripcion: enrollment.curso?.estado?.descripcion ?? "-",
+      },
     },
     estudiante: {
       id: enrollment.estudiante?.id,
@@ -254,11 +258,16 @@ function createActionsCell(enrollment) {
   const viewButton = createIconButton("view", "Ver inscripción", "M12 5c5 0 9 5.5 9 7s-4 7-9 7-9-5.5-9-7 4-7 9-7Zm0 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z", enrollment.id);
   const diplomaButton = createIconButton("diploma", "Diploma", "M6 2h9l5 5v15H6V2Zm8 1.5V8h4.5L14 3.5ZM8 11v2h10v-2H8Zm0 4v2h7v-2H8ZM4 6v18h14v-2H6V6H4Z", enrollment.id);
   const cancelButton = createIconButton("delete", "Cancelar inscripción", "M7 21a2 2 0 0 1-2-2V7h14v12a2 2 0 0 1-2 2H7ZM9 4h6l1 2h5v2H3V6h5l1-2Zm0 7v6h2v-6H9Zm4 0v6h2v-6h-2Z", enrollment.id);
+  const isCancelled = Number(enrollment.estado.id) === 2;
+  const courseIsClosed = Number(enrollment.curso.estado.id) === 3;
 
-  if (Number(enrollment.estado.id) === 2) {
+  if (isCancelled) {
     diplomaButton.disabled = true;
     diplomaButton.title = "No se genera diploma para inscripciones canceladas";
     cancelButton.disabled = true;
+  } else if (!courseIsClosed) {
+    diplomaButton.disabled = true;
+    diplomaButton.title = "El diploma se genera cuando la inscripción del curso está cerrada";
   }
 
   actions.append(viewButton, diplomaButton, cancelButton);

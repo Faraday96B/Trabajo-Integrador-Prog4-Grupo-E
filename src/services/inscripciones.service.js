@@ -8,6 +8,7 @@ const {
 } = require('../dtos/inscripcion.dto');
 
 const CURSO_ESTADO_INSCRIPCION_ABIERTA = 2;
+const CURSO_ESTADO_INSCRIPCION_CERRADA = 3;
 
 function crearError(message, status = 400) {
   const error = new Error(message);
@@ -214,6 +215,10 @@ async function generarDiplomaIndividual(idInscripcion) {
 
   if (Number(inscripcion.id_inscripcion_estado) === inscripcionModel.ESTADO_CANCELADA) {
     throw crearError('No se puede generar diploma de una inscripcion cancelada.');
+  }
+
+  if (Number(inscripcion.id_curso_estado) !== CURSO_ESTADO_INSCRIPCION_CERRADA) {
+    throw crearError('El diploma solo puede generarse cuando la inscripcion del curso esta cerrada.');
   }
 
   const inscripcionResponse = toInscripcionResponse(inscripcion);

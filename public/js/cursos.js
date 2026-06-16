@@ -41,6 +41,95 @@ const coursePaginationState = {
   totalPaginas: 1,
 };
 
+function getToastContainer() {
+  let container = document.querySelector("#adminToastContainer");
+
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "adminToastContainer";
+    container.className = "admin-toast-container";
+    container.setAttribute("aria-live", "polite");
+    container.setAttribute("aria-atomic", "true");
+    document.body.appendChild(container);
+  }
+
+  return container;
+}
+
+function showToast(message, type = "info") {
+  const container = getToastContainer();
+  const toast = document.createElement("div");
+  const validTypes = ["success", "error", "info"];
+
+  toast.className = `admin-toast ${validTypes.includes(type) ? type : "info"}`;
+  toast.setAttribute("role", "status");
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  window.setTimeout(() => {
+    toast.classList.add("is-hiding");
+    window.setTimeout(() => toast.remove(), 220);
+  }, 3600);
+}
+
+function showConfirmDialog({
+  title = "Confirmar accion",
+  message = "Confirme la accion para continuar.",
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
+} = {}) {
+  return new Promise((resolve) => {
+    if (typeof HTMLDialogElement === "undefined") {
+      showToast("El navegador no permite mostrar la confirmacion.", "error");
+      resolve(false);
+      return;
+    }
+
+    const dialog = document.createElement("dialog");
+    dialog.className = "enrollment-dialog enrollment-confirm-dialog";
+    dialog.innerHTML = `
+      <div class="enrollment-dialog-header">
+        <div>
+          <span class="enrollment-dialog-kicker">Confirmacion</span>
+          <h2>${title}</h2>
+        </div>
+        <button class="enrollment-dialog-close" type="button" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <div class="enrollment-dialog-body">
+        <p>${message}</p>
+      </div>
+      <div class="enrollment-dialog-footer">
+        <button class="light-admin-button" type="button" data-confirm-cancel>${cancelText}</button>
+        <button class="primary-admin-button" type="button" data-confirm-accept>${confirmText}</button>
+      </div>
+    `;
+
+    const close = (value) => {
+      resolve(value);
+      dialog.close();
+      dialog.remove();
+    };
+
+    dialog.querySelector(".enrollment-dialog-close")?.addEventListener("click", () => close(false));
+    dialog.querySelector("[data-confirm-cancel]")?.addEventListener("click", () => close(false));
+    dialog.querySelector("[data-confirm-accept]")?.addEventListener("click", () => close(true));
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) {
+        close(false);
+      }
+    });
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      close(false);
+    });
+
+    document.body.appendChild(dialog);
+    dialog.showModal();
+  });
+}
+
 async function requestApi(url, options = {}) {
   if (window.apiRequest) {
     return window.apiRequest(url, options);
@@ -431,7 +520,7 @@ async function loadCourses() {
     console.error(error);
     allCourses = [];
     renderCourses([], 1);
-    alert(`No se pudieron cargar los cursos: ${error.message}`);
+    showToast(`No se pudieron cargar los cursos: ${error.message}`, "error");
   }
 }
 
@@ -508,8 +597,10 @@ async function setupCourseDetail() {
   const courseId = params.get("id");
 
   if (!courseId) {
-    alert("No se indicó el curso a visualizar.");
-    window.location.href = "cursos.html";
+    showToast("No se indicó el curso a visualizar.", "error");
+    window.setTimeout(() => {
+      window.location.href = "cursos.html";
+    }, 900);
     return;
   }
 
@@ -520,13 +611,19 @@ async function setupCourseDetail() {
     renderCourseDetail(course);
   } catch (error) {
     console.error(error);
-    alert(`No se pudo cargar el curso: ${error.message}`);
-    window.location.href = "cursos.html";
+    showToast(`No se pudo cargar el curso: ${error.message}`, "error");
+    window.setTimeout(() => {
+      window.location.href = "cursos.html";
+    }, 900);
   }
 }
 
 async function deleteCourse(id) {
-  const confirmed = confirm("¿Seguro que querés eliminar este curso?");
+  const confirmed = await showConfirmDialog({
+    title: "Eliminar curso",
+    message: "¿Seguro que querés eliminar este curso? El curso quedará dado de baja.",
+    confirmText: "Eliminar",
+  });
 
   if (!confirmed) {
     return;
@@ -534,21 +631,23 @@ async function deleteCourse(id) {
 
   try {
     const result = await requestApi(`/api/cursos/${id}`, { method: "DELETE" });
-    alert(result.message);
+    showToast(result.message, "success");
     await loadCourses();
   } catch (error) {
     console.error(error);
-    alert(`No se pudo eliminar el curso: ${error.message}`);
+    showToast(`No se pudo eliminar el curso: ${error.message}`, "error");
   }
 }
 
 async function showDiploma(id) {
   try {
+    showToast("Generando diploma...", "info");
     const { blob, fileName } = await requestPdfBlob(`/api/cursos/${id}/diploma`);
     openPdfBlob(blob, fileName);
+    showToast("Diploma generado correctamente.", "success");
   } catch (error) {
     console.error(error);
-    alert(`No se pudo generar el diploma: ${error.message}`);
+    showToast(`No se pudo generar el diploma: ${error.message}`, "error");
   }
 }
 
@@ -590,8 +689,10 @@ async function setupCourseForm() {
     const course = await findCourseById(editingCourseId);
 
     if (Number(course.estado?.id) === 4) {
-      alert("No se puede editar un curso eliminado.");
-      window.location.href = "cursos.html";
+      showToast("No se puede editar un curso eliminado.", "error");
+      window.setTimeout(() => {
+        window.location.href = "cursos.html";
+      }, 900);
       return;
     }
 
@@ -606,8 +707,10 @@ async function setupCourseForm() {
     }
   } catch (error) {
     console.error(error);
-    alert(`No se encontró el curso: ${error.message}`);
-    window.location.href = "cursos.html";
+    showToast(`No se encontró el curso: ${error.message}`, "error");
+    window.setTimeout(() => {
+      window.location.href = "cursos.html";
+    }, 900);
   }
 }
 
@@ -617,7 +720,7 @@ async function saveCourse(event) {
   const course = getCourseFormData();
 
   if (!course.nombre || !course.fechaInicio || course.cantidadHoras <= 0 || course.inscriptosMax <= 0) {
-    alert("Complete los campos obligatorios del curso.");
+    showToast("Complete los campos obligatorios del curso.", "info");
     return;
   }
 
@@ -633,11 +736,13 @@ async function saveCourse(event) {
       body: JSON.stringify(course)
     });
 
-    alert(result.message);
-    window.location.href = "cursos.html";
+    showToast(result.message, "success");
+    window.setTimeout(() => {
+      window.location.href = "cursos.html";
+    }, 700);
   } catch (error) {
     console.error(error);
-    alert(`No se pudo guardar el curso: ${error.message}`);
+    showToast(`No se pudo guardar el curso: ${error.message}`, "error");
   }
 }
 
