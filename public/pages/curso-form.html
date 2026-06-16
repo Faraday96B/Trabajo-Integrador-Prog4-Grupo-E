@@ -63,12 +63,18 @@
     <div class="admin-content">
       <header class="admin-topbar">
         <div class="ms-auto">
-          <button class="admin-user" type="button">
-            <span class="admin-avatar" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm-8 9a8 8 0 0 1 16 0H4Z"/></svg>
-            </span>
-            <span>Admin</span>
-          </button>
+          <div class="dropdown">
+            <button class="admin-user dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="admin-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm-8 9a8 8 0 0 1 16 0H4Z"/></svg>
+              </span>
+              <span>Admin</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="perfil.html">Perfil</a></li>
+              <li><a class="dropdown-item" href="login.html" data-auth-logout>Cerrar sesion</a></li>
+            </ul>
+          </div>
         </div>
       </header>
 

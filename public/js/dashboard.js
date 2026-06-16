@@ -1,10 +1,16 @@
-const totalCoursesText = document.querySelector("#dashboardTotalCourses");
-const activeCoursesText = document.querySelector("#dashboardActiveCourses");
-const totalEnrollmentsText = document.querySelector("#dashboardTotalEnrollments");
+const coursesTotal = document.querySelector("#coursesTotal");
+const activeCoursesTotal = document.querySelector("#activeCoursesTotal");
+const studentsTotal = document.querySelector("#studentsTotal");
+const enrollmentsTotal = document.querySelector("#enrollmentsTotal");
+const notificationsTotal = document.querySelector("#notificationsTotal");
 const activeCoursesTableBody = document.querySelector("#activeCoursesTableBody");
 const recentEnrollmentsTableBody = document.querySelector("#recentEnrollmentsTableBody");
 
-const COURSE_STATE_OPEN = 2;
+function setText(element, text) {
+  if (element) {
+    element.textContent = text;
+  }
+}
 
 async function requestApi(url, options = {}) {
   if (window.apiRequest) {
@@ -36,63 +42,61 @@ function formatDate(value) {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
-function createRecentEnrollmentRow(enrollment) {
-  const row = document.createElement("tr");
-  const student = enrollment.estudiante ?? {};
-  const course = enrollment.curso ?? {};
-  const state = enrollment.estado ?? {};
-  const studentName = `${student.apellido ?? ""}, ${student.nombres ?? ""}`.trim();
-  const stateIsActive = Number(state.id) === 1;
-  const studentCell = document.createElement("td");
-  const courseCell = document.createElement("td");
-  const dateCell = document.createElement("td");
-  const stateCell = document.createElement("td");
-  const badge = document.createElement("span");
-
-  studentCell.textContent = studentName || "-";
-  courseCell.textContent = course.nombre ?? "-";
-  dateCell.textContent = formatDate(enrollment.fechaHoraInscripcion);
-  badge.className = `table-badge ${stateIsActive ? "success" : "muted"}`;
-  badge.textContent = state.descripcion ?? "-";
-  stateCell.appendChild(badge);
-
-  row.append(studentCell, courseCell, dateCell, stateCell);
-  return row;
-}
-
-function createActiveCourseRow(course) {
-  const row = document.createElement("tr");
-  const state = course.estado ?? {};
-  const stateCell = document.createElement("td");
-  const badge = document.createElement("span");
-
-  row.append(
-    createTextCell(course.nombre ?? "-"),
-    createTextCell(formatDate(course.fechaInicio)),
-    createTextCell(course.cantidadHoras ?? "-"),
-    createTextCell(course.inscriptosConfirmados ?? 0),
-    createTextCell(course.inscriptosMax ?? "-")
-  );
-
-  badge.className = "table-badge success";
-  badge.textContent = state.descripcion ?? "Inscripcion abierta";
-  stateCell.appendChild(badge);
-  row.appendChild(stateCell);
-
-  return row;
-}
-
-function createTextCell(text) {
+function createCell(text) {
   const cell = document.createElement("td");
   cell.textContent = text;
   return cell;
 }
 
-function getOpenCourses(courses = []) {
-  return courses.filter((course) => Number(course.estado?.id) === COURSE_STATE_OPEN);
+function normalizeCourse(course) {
+  return {
+    id: course.id,
+    nombre: course.nombre ?? "-",
+    fechaInicio: course.fechaInicio,
+    cantidadHoras: course.cantidadHoras ?? 0,
+    inscriptosMax: course.inscriptosMax ?? 0,
+    inscriptosConfirmados: course.inscriptosConfirmados ?? 0,
+    estado: {
+      id: Number(course.estado?.id),
+      descripcion: course.estado?.descripcion ?? "-",
+      activo: Boolean(course.estado?.activo),
+    },
+  };
+}
+
+function isCourseActive(course) {
+  const normalizedCourse = normalizeCourse(course);
+  return normalizedCourse.estado.activo && normalizedCourse.estado.id !== 4;
+}
+
+function createCourseStatusCell(course) {
+  const cell = document.createElement("td");
+  const badge = document.createElement("span");
+
+  badge.className = "table-badge success";
+  badge.textContent = course.estado.descripcion;
+  cell.appendChild(badge);
+  return cell;
+}
+
+function createActiveCourseRow(course) {
+  const normalizedCourse = normalizeCourse(course);
+  const row = document.createElement("tr");
+
+  row.append(
+    createCell(normalizedCourse.nombre),
+    createCell(formatDate(normalizedCourse.fechaInicio)),
+    createCell(normalizedCourse.cantidadHoras),
+    createCell(normalizedCourse.inscriptosConfirmados),
+    createCell(normalizedCourse.inscriptosMax),
+    createCourseStatusCell(normalizedCourse)
+  );
+
+  return row;
 }
 
 function renderActiveCourses(courses) {
@@ -100,14 +104,47 @@ function renderActiveCourses(courses) {
     return;
   }
 
-  if (!courses.length) {
+  const activeCourses = courses.filter(isCourseActive).slice(0, 5);
+
+  if (!activeCourses.length) {
     const row = document.createElement("tr");
-    row.innerHTML = '<td colspan="6">No hay cursos con inscripcion abierta.</td>';
+    const cell = createCell("No hay cursos activos para mostrar.");
+
+    cell.colSpan = 6;
+    row.appendChild(cell);
     activeCoursesTableBody.replaceChildren(row);
     return;
   }
 
-  activeCoursesTableBody.replaceChildren(...courses.slice(0, 5).map(createActiveCourseRow));
+  activeCoursesTableBody.replaceChildren(...activeCourses.map(createActiveCourseRow));
+}
+
+function createEnrollmentStatusCell(enrollment) {
+  const cell = document.createElement("td");
+  const badge = document.createElement("span");
+  const state = enrollment.estado ?? {};
+  const stateIsActive = Number(state.id) === 1;
+
+  badge.className = `table-badge ${stateIsActive ? "success" : "muted"}`;
+  badge.textContent = state.descripcion ?? "-";
+  cell.appendChild(badge);
+  return cell;
+}
+
+function createRecentEnrollmentRow(enrollment) {
+  const row = document.createElement("tr");
+  const student = enrollment.estudiante ?? {};
+  const course = enrollment.curso ?? {};
+  const studentName = `${student.apellido ?? ""}, ${student.nombres ?? ""}`.trim();
+
+  row.append(
+    createCell(studentName || "-"),
+    createCell(course.nombre ?? "-"),
+    createCell(formatDate(enrollment.fechaHoraInscripcion)),
+    createEnrollmentStatusCell(enrollment)
+  );
+
+  return row;
 }
 
 function renderRecentEnrollments(enrollments) {
@@ -117,7 +154,10 @@ function renderRecentEnrollments(enrollments) {
 
   if (!enrollments.length) {
     const row = document.createElement("tr");
-    row.innerHTML = '<td colspan="4">No hay inscripciones registradas.</td>';
+    const cell = createCell("No hay inscripciones registradas.");
+
+    cell.colSpan = 4;
+    row.appendChild(cell);
     recentEnrollmentsTableBody.replaceChildren(row);
     return;
   }
@@ -125,65 +165,64 @@ function renderRecentEnrollments(enrollments) {
   recentEnrollmentsTableBody.replaceChildren(...enrollments.map(createRecentEnrollmentRow));
 }
 
-async function loadCourseSummary() {
-  if (!totalCoursesText && !activeCoursesText && !activeCoursesTableBody) {
+function renderCourseError(error) {
+  setText(coursesTotal, "Error");
+  setText(activeCoursesTotal, "Error");
+
+  if (!activeCoursesTableBody) {
     return;
   }
 
+  const row = document.createElement("tr");
+  const cell = createCell(`No se pudieron cargar los cursos: ${error.message}`);
+
+  cell.colSpan = 6;
+  row.appendChild(cell);
+  activeCoursesTableBody.replaceChildren(row);
+}
+
+async function loadCourseSummary() {
   try {
     const result = await requestApi("/api/cursos");
     const courses = Array.isArray(result.data) ? result.data : [];
-    const openCourses = getOpenCourses(courses);
+    const activeCourses = courses.filter(isCourseActive);
 
-    if (totalCoursesText) {
-      totalCoursesText.textContent = String(courses.length);
-    }
-
-    if (activeCoursesText) {
-      activeCoursesText.textContent = String(openCourses.length);
-    }
-
-    renderActiveCourses(openCourses);
+    setText(coursesTotal, courses.length);
+    setText(activeCoursesTotal, activeCourses.length);
+    renderActiveCourses(courses);
   } catch (error) {
     console.error(error);
-
-    if (totalCoursesText) {
-      totalCoursesText.textContent = "-";
-    }
-
-    if (activeCoursesText) {
-      activeCoursesText.textContent = "-";
-    }
-
-    if (activeCoursesTableBody) {
-      const row = document.createElement("tr");
-      row.innerHTML = '<td colspan="6">No se pudieron cargar los cursos.</td>';
-      activeCoursesTableBody.replaceChildren(row);
-    }
+    renderCourseError(error);
   }
 }
 
 async function loadEnrollmentSummary() {
-  if (!totalEnrollmentsText && !recentEnrollmentsTableBody) {
-    return;
-  }
-
   try {
     const result = await requestApi("/api/inscripciones?limite=5");
+    const enrollments = Array.isArray(result.data) ? result.data : [];
 
-    if (totalEnrollmentsText) {
-      totalEnrollmentsText.textContent = String(result.meta?.total ?? result.data?.length ?? 0);
-    }
-
-    renderRecentEnrollments(Array.isArray(result.data) ? result.data : []);
+    setText(enrollmentsTotal, result.meta?.total ?? enrollments.length);
+    renderRecentEnrollments(enrollments);
   } catch (error) {
     console.error(error);
+    setText(enrollmentsTotal, "Error");
 
-    if (totalEnrollmentsText) {
-      totalEnrollmentsText.textContent = "-";
+    if (recentEnrollmentsTableBody) {
+      const row = document.createElement("tr");
+      const cell = createCell(`No se pudieron cargar las inscripciones: ${error.message}`);
+
+      cell.colSpan = 4;
+      row.appendChild(cell);
+      recentEnrollmentsTableBody.replaceChildren(row);
     }
   }
 }
 
+function renderPendingMetrics() {
+  setText(studentsTotal, "Pendiente");
+  setText(notificationsTotal, "0");
+}
+
+renderPendingMetrics();
 loadCourseSummary();
 loadEnrollmentSummary();
