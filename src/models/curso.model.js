@@ -1,8 +1,14 @@
 const pool = require('../db/pool');
 
 const TABLE = 'public.cursos';
+const INSCRIPTOS_CONFIRMADOS_SQL = `(
+        SELECT COUNT(*)::int
+        FROM public.inscripciones i
+        WHERE i.id_curso = c.id_curso
+          AND i.id_inscripcion_estado = 1
+      )`;
 
-function buildFilters({ nombre, estado, fechaDesde, fechaHasta } = {}) {
+function buildFilters({ nombre, estado, fechaDesde, fechaHasta, inscripcion } = {}) {
   const where = ['ce.es_activo = 1'];
   const params = [];
 
@@ -24,6 +30,14 @@ function buildFilters({ nombre, estado, fechaDesde, fechaHasta } = {}) {
   if (fechaHasta) {
     params.push(fechaHasta);
     where.push(`c.fecha_inicio <= $${params.length}`);
+  }
+
+  if (inscripcion === 'con-cupo') {
+    where.push(`${INSCRIPTOS_CONFIRMADOS_SQL} < c.inscriptos_max`);
+  }
+
+  if (inscripcion === 'sin-cupo') {
+    where.push(`${INSCRIPTOS_CONFIRMADOS_SQL} >= c.inscriptos_max`);
   }
 
   return {
@@ -54,35 +68,42 @@ function mapCursoRow(row) {
   };
 }
 
-async function listar({ nombre, estado, fechaDesde, fechaHasta, limit, offset } = {}) {
-  const { whereSql, params } = buildFilters({ nombre, estado, fechaDesde, fechaHasta });
+async function listar({ nombre, estado, fechaDesde, fechaHasta, inscripcion, limit, offset } = {}) {
+  const { whereSql, params } = buildFilters({ nombre, estado, fechaDesde, fechaHasta, inscripcion });
+  const values = [...params];
+  let paginationSql = '';
+
+  if (limit !== undefined && limit !== null && limit !== '') {
+    values.push(Number(limit));
+    paginationSql += ` LIMIT $${values.length}`;
+  }
+
+  if (offset !== undefined && offset !== null && offset !== '') {
+    values.push(Number(offset));
+    paginationSql += ` OFFSET $${values.length}`;
+  }
+
   const sql = `
     SELECT
       c.*,
       ce.descripcion AS curso_estado_descripcion,
       ce.es_activo AS curso_estado_es_activo,
       u.nombre_usuario AS usuario_nombre_usuario,
-      (
-        SELECT COUNT(*)
-        FROM public.inscripciones i
-        WHERE i.id_curso = c.id_curso
-          AND i.id_inscripcion_estado = 1
-      ) AS inscriptos_confirmados
+      ${INSCRIPTOS_CONFIRMADOS_SQL} AS inscriptos_confirmados
     FROM ${TABLE} c
     INNER JOIN public.cursos_estados ce ON ce.id_curso_estado = c.id_curso_estado
     INNER JOIN public.usuarios u ON u.id_usuario = c.id_usuario_modificacion
     ${whereSql}
     ORDER BY c.id_curso DESC
-    ${limit !== undefined && limit !== null && limit !== '' ? `LIMIT ${Number(limit)}` : ''}
-    ${offset !== undefined && offset !== null && offset !== '' ? `OFFSET ${Number(offset)}` : ''}
+    ${paginationSql}
   `;
 
-  const result = await pool.query(sql, params);
+  const result = await pool.query(sql, values);
   return result.rows.map(mapCursoRow);
 }
 
-async function contar({ nombre, estado, fechaDesde, fechaHasta } = {}) {
-  const { whereSql, params } = buildFilters({ nombre, estado, fechaDesde, fechaHasta });
+async function contar({ nombre, estado, fechaDesde, fechaHasta, inscripcion } = {}) {
+  const { whereSql, params } = buildFilters({ nombre, estado, fechaDesde, fechaHasta, inscripcion });
   const sql = `SELECT COUNT(*)::int AS total FROM ${TABLE} c INNER JOIN public.cursos_estados ce ON ce.id_curso_estado = c.id_curso_estado ${whereSql}`;
   const result = await pool.query(sql, params);
   return result.rows[0]?.total ?? 0;

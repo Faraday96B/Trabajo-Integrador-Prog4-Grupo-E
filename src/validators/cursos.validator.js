@@ -2,6 +2,7 @@ const { body, param, query } = require('express-validator');
 const { validarRequest } = require('../middleware/validation.middleware');
 
 const ESTADOS_CURSO_PERMITIDOS = [1, 2, 3];
+const FILTROS_INSCRIPCION_PERMITIDOS = ['con-cupo', 'sin-cupo'];
 
 function getBodyValue(req, camelCaseName, snakeCaseName) {
   return req.body?.[camelCaseName] ?? req.body?.[snakeCaseName];
@@ -72,11 +73,25 @@ const validarIdCurso = [
 ];
 
 const validarListadoCursos = [
+  query('pagina')
+    .optional({ checkFalsy: true })
+    .isInt({ min: 1 })
+    .withMessage('La pagina debe ser un numero entero mayor a 0.')
+    .toInt(),
+  query('limite')
+    .optional({ checkFalsy: true })
+    .isInt({ min: 1, max: 100 })
+    .withMessage('El limite debe ser un numero entero entre 1 y 100.')
+    .toInt(),
   query('estado')
     .optional({ checkFalsy: true })
     .isInt({ min: 1, max: 4 })
     .withMessage('El estado del curso debe ser un numero valido.')
     .toInt(),
+  query('inscripcion')
+    .optional({ checkFalsy: true })
+    .isIn(FILTROS_INSCRIPCION_PERMITIDOS)
+    .withMessage('El filtro de inscripcion debe ser con-cupo o sin-cupo.'),
   query('fechaDesde')
     .optional({ checkFalsy: true })
     .isISO8601({ strict: true, strictSeparator: true })

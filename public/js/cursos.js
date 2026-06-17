@@ -31,7 +31,6 @@ const courseDetailAvailable = document.querySelector("#courseDetailAvailable");
 const courseDetailEdit = document.querySelector("#courseDetailEdit");
 const courseDetailDiploma = document.querySelector("#courseDetailDiploma");
 
-let allCourses = [];
 let editingCourseId = null;
 const COURSE_PAGE_SIZE = 10;
 const coursePaginationState = {
@@ -360,31 +359,33 @@ function createCourseRow(course) {
   return row;
 }
 
-function applyClientFilters(courses) {
-  const enrollment = enrollmentFilter?.value ?? "";
+function normalizeCourseMeta(meta = {}) {
+  const limite = Math.max(1, Number(meta.limite ?? COURSE_PAGE_SIZE) || COURSE_PAGE_SIZE);
+  const total = Math.max(0, Number(meta.total ?? 0) || 0);
+  const totalPaginas = Math.max(1, Number(meta.totalPaginas ?? Math.ceil(total / limite)) || 1);
+  const pagina = Math.min(
+    Math.max(1, Number(meta.pagina ?? coursePaginationState.pagina) || 1),
+    totalPaginas
+  );
 
-  if (!enrollment) {
-    return courses;
-  }
-
-  return courses.filter((course) => {
-    const normalizedCourse = normalizeCourse(course);
-    const hasCapacity = Number(normalizedCourse.inscriptosConfirmados) < Number(normalizedCourse.inscriptosMax);
-    return enrollment === "con-cupo" ? hasCapacity : !hasCapacity;
-  });
+  return {
+    pagina,
+    limite,
+    total,
+    totalPaginas,
+  };
 }
 
-function updateCoursePagination(total, page = coursePaginationState.pagina) {
-  const totalCourses = Math.max(0, Number(total) || 0);
-  const totalPages = Math.max(1, Math.ceil(totalCourses / coursePaginationState.limite));
-  const currentPage = Math.min(Math.max(1, Number(page) || 1), totalPages);
+function updateCoursePagination(meta = {}) {
+  const normalizedMeta = normalizeCourseMeta(meta);
 
-  coursePaginationState.total = totalCourses;
-  coursePaginationState.totalPaginas = totalPages;
-  coursePaginationState.pagina = currentPage;
+  coursePaginationState.pagina = normalizedMeta.pagina;
+  coursePaginationState.limite = normalizedMeta.limite;
+  coursePaginationState.total = normalizedMeta.total;
+  coursePaginationState.totalPaginas = normalizedMeta.totalPaginas;
 
-  const isFirstPage = currentPage <= 1;
-  const isLastPage = currentPage >= totalPages;
+  const isFirstPage = coursePaginationState.pagina <= 1;
+  const isLastPage = coursePaginationState.pagina >= coursePaginationState.totalPaginas;
 
   renderCoursePageNumbers();
 
@@ -451,32 +452,26 @@ function renderCoursePageNumbers() {
   coursePageNumbersContainer.replaceChildren(...buttons);
 }
 
-function renderCourses(courses, page = coursePaginationState.pagina) {
+function renderCourses(courses, meta = {}) {
   if (!coursesTableBody) {
     return;
   }
 
-  updateCoursePagination(courses.length, page);
+  updateCoursePagination(meta);
 
-  const start = (coursePaginationState.pagina - 1) * coursePaginationState.limite;
-  const end = start + coursePaginationState.limite;
-  const visibleCourses = courses.slice(start, end);
-  const rows = visibleCourses.map(createCourseRow);
+  const rows = courses.map(createCourseRow);
   coursesTableBody.replaceChildren(...rows);
 
   if (resultsText) {
-    const total = courses.length;
-    const firstShown = total === 0 ? 0 : start + 1;
-    const lastShown = total === 0 ? 0 : start + visibleCourses.length;
+    const total = coursePaginationState.total;
+    const shown = courses.length;
+    const firstShown = total === 0 ? 0 : ((coursePaginationState.pagina - 1) * coursePaginationState.limite) + 1;
+    const lastShown = total === 0 ? 0 : firstShown + shown - 1;
 
     resultsText.textContent = total === 0
       ? "Mostrando 0 resultados"
       : `Mostrando ${firstShown} a ${lastShown} de ${total} resultados`;
   }
-}
-
-function renderFilteredCourses(page = 1) {
-  renderCourses(applyClientFilters(allCourses), page);
 }
 
 function goToCoursePage(page) {
@@ -489,13 +484,14 @@ function goToCoursePage(page) {
     return;
   }
 
-  renderFilteredCourses(targetPage);
+  loadCourses(targetPage);
 }
 
 function buildCourseQuery() {
   const params = new URLSearchParams();
   const name = nameFilter?.value.trim();
   const status = statusFilter?.value;
+  const enrollment = enrollmentFilter?.value;
 
   if (name) {
     params.set("nombre", name);
@@ -505,21 +501,38 @@ function buildCourseQuery() {
     params.set("estado", status);
   }
 
+  if (enrollment) {
+    params.set("inscripcion", enrollment);
+  }
+
+  params.set("pagina", coursePaginationState.pagina);
+  params.set("limite", coursePaginationState.limite);
+
   const query = params.toString();
   return query ? `?${query}` : "";
 }
 
-async function loadCourses() {
+async function loadCourses(page = coursePaginationState.pagina) {
+  coursePaginationState.pagina = Math.max(1, Number(page) || 1);
   setLoading();
 
   try {
     const result = await requestApi(`/api/cursos${buildCourseQuery()}`);
-    allCourses = Array.isArray(result.data) ? result.data : [];
-    renderFilteredCourses(1);
+    const meta = normalizeCourseMeta(result.meta ?? {});
+
+    if (meta.total > 0 && coursePaginationState.pagina > meta.totalPaginas) {
+      return loadCourses(meta.totalPaginas);
+    }
+
+    renderCourses(Array.isArray(result.data) ? result.data : [], result.meta);
   } catch (error) {
     console.error(error);
-    allCourses = [];
-    renderCourses([], 1);
+    renderCourses([], {
+      total: 0,
+      pagina: 1,
+      limite: coursePaginationState.limite,
+      totalPaginas: 1,
+    });
     showToast(`No se pudieron cargar los cursos: ${error.message}`, "error");
   }
 }
@@ -632,7 +645,7 @@ async function deleteCourse(id) {
   try {
     const result = await requestApi(`/api/cursos/${id}`, { method: "DELETE" });
     showToast(result.message, "success");
-    await loadCourses();
+    await loadCourses(coursePaginationState.pagina);
   } catch (error) {
     console.error(error);
     showToast(`No se pudo eliminar el curso: ${error.message}`, "error");
@@ -777,12 +790,12 @@ function clearFilters() {
     enrollmentFilter.value = "";
   }
 
-  loadCourses();
+  loadCourses(1);
 }
 
-searchButton?.addEventListener("click", loadCourses);
+searchButton?.addEventListener("click", () => loadCourses(1));
 clearButton?.addEventListener("click", clearFilters);
-enrollmentFilter?.addEventListener("change", () => renderFilteredCourses(1));
+enrollmentFilter?.addEventListener("change", () => loadCourses(1));
 firstCoursePageButton?.addEventListener("click", () => goToCoursePage(1));
 previousCoursePageButton?.addEventListener("click", () => goToCoursePage(coursePaginationState.pagina - 1));
 nextCoursePageButton?.addEventListener("click", () => goToCoursePage(coursePaginationState.pagina + 1));
@@ -796,7 +809,7 @@ coursePageNumbersContainer?.addEventListener("click", (event) => {
 });
 nameFilter?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
-    loadCourses();
+    loadCourses(1);
   }
 });
 coursesTableBody?.addEventListener("click", handleTableClick);

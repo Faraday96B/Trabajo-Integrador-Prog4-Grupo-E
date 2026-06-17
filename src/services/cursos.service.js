@@ -18,6 +18,33 @@ function crearError(message, status = 400) {
   return error;
 }
 
+function buildPagination(query = {}) {
+  const pagina = Math.max(1, Number(query.pagina ?? query.page ?? 1) || 1);
+  const limiteInput = Number(query.limite ?? query.limit ?? 10) || 10;
+  const limite = Math.min(Math.max(1, limiteInput), 100);
+
+  return {
+    pagina,
+    limite,
+    offset: (pagina - 1) * limite,
+  };
+}
+
+function buildFiltros(query = {}) {
+  const pagination = buildPagination(query);
+
+  return {
+    nombre: query.nombre,
+    estado: query.estado,
+    fechaDesde: query.fechaDesde ?? query.fecha_desde,
+    fechaHasta: query.fechaHasta ?? query.fecha_hasta,
+    inscripcion: query.inscripcion,
+    limit: pagination.limite,
+    offset: pagination.offset,
+    pagination,
+  };
+}
+
 async function validarNombreUnico(nombre, excluirId = null) {
   const existeNombre = await cursoModel.existeNombre(nombre, excluirId);
 
@@ -27,12 +54,23 @@ async function validarNombreUnico(nombre, excluirId = null) {
 }
 
 async function listarCursos(filtros = {}) {
-  const cursos = await cursoModel.listar(filtros);
+  const filtrosConstruidos = buildFiltros(filtros);
+  const { pagination, ...modelFilters } = filtrosConstruidos;
+  const [cursos, total] = await Promise.all([
+    cursoModel.listar(modelFilters),
+    cursoModel.contar(modelFilters),
+  ]);
 
   return {
     ok: true,
     message: 'Listado de cursos obtenido correctamente.',
     data: toCursoListResponse(cursos),
+    meta: {
+      total,
+      pagina: pagination.pagina,
+      limite: pagination.limite,
+      totalPaginas: Math.ceil(total / pagination.limite),
+    },
   };
 }
 

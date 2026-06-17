@@ -183,13 +183,15 @@ function renderCourseError(error) {
 
 async function loadCourseSummary() {
   try {
-    const result = await requestApi("/api/cursos");
-    const courses = Array.isArray(result.data) ? result.data : [];
-    const activeCourses = courses.filter(isCourseActive);
+    const [coursesResult, activeCoursesResult] = await Promise.all([
+      requestApi("/api/cursos?limite=1"),
+      requestApi("/api/cursos?estado=2&limite=5"),
+    ]);
+    const activeCourses = Array.isArray(activeCoursesResult.data) ? activeCoursesResult.data : [];
 
-    setText(coursesTotal, courses.length);
-    setText(activeCoursesTotal, activeCourses.length);
-    renderActiveCourses(courses);
+    setText(coursesTotal, coursesResult.meta?.total ?? (Array.isArray(coursesResult.data) ? coursesResult.data.length : 0));
+    setText(activeCoursesTotal, activeCoursesResult.meta?.total ?? activeCourses.length);
+    renderActiveCourses(activeCourses);
   } catch (error) {
     console.error(error);
     renderCourseError(error);
