@@ -465,12 +465,10 @@ function renderCourses(courses, meta = {}) {
   if (resultsText) {
     const total = coursePaginationState.total;
     const shown = courses.length;
-    const firstShown = total === 0 ? 0 : ((coursePaginationState.pagina - 1) * coursePaginationState.limite) + 1;
-    const lastShown = total === 0 ? 0 : firstShown + shown - 1;
 
     resultsText.textContent = total === 0
       ? "Mostrando 0 resultados"
-      : `Mostrando ${firstShown} a ${lastShown} de ${total} resultados`;
+      : `Mostrando ${shown} de ${total} resultados`;
   }
 }
 
